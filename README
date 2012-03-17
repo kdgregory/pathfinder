@@ -1,0 +1,3 @@
+I really like "rake routes" as a debugging tool, and PathFinder is an attempt
+to do the same thing with Java web applications (or at least, it will be when
+it's done).
