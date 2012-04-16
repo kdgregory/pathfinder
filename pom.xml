@@ -15,11 +15,9 @@
 
     <modules>
         <module>test-wars</module>
-<!--
         <module>lib-core</module>
         <module>lib-servlet</module>
         <module>pathfinder</module>
--->
     </modules>
 
 
@@ -27,6 +25,7 @@
         <!-- all dependency versions are specified here -->
         <junit.version>4.10</junit.version>
         <practicalxml.version>1.1.11</practicalxml.version>
+        <kdgcommons.version>1.0.1</kdgcommons.version>
         <servlet.version>2.4</servlet.version>
     </properties>
 
