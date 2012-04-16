@@ -14,8 +14,8 @@
   <name>PathFinder Test WARs</name>
 
   <description>
-    Creates a single JAR file containing a bunch of WARs for testing. This becomes a
-    test-scoped dependency of the various modules.
+    Creates a set of WAR files that are used for testing the various modules.
+    These will become test-scoped dependencies of those modules.
   </description>
 
   <modules>

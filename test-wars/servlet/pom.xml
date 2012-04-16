@@ -8,12 +8,18 @@
       <version>1.0-SNAPSHOT</version>
   </parent>
 
-  <artifactId>pathfinder-testwars-servlet</artifactId>
+  <artifactId>pathfinder-testwar-servlet</artifactId>
   <packaging>war</packaging>
 
-  <name>Test WAR for Base Servlet Testing</name>
+  <name>WAR for Base Servlet Testing</name>
 
   <dependencies>
+    <dependency>
+        <groupId>javax.servlet</groupId>
+        <artifactId>servlet-api</artifactId>
+        <version>${servlet.version}</version>
+        <scope>provided</scope>
+    </dependency>
   </dependencies>
 
 </project>
