@@ -19,6 +19,20 @@
     </description>
 
     <dependencies>
+        <dependency>
+            <groupId>com.kdgregory.pathfinder</groupId>
+            <artifactId>pathfinder-test-wars</artifactId>
+            <version>${project.version}</version>
+            <classifier>archive</classifier>
+            <scope>test</scope>
+        </dependency>
+        
+        <dependency>
+            <!-- http://sourceforge.net/projects/kdgcommons -->
+            <groupId>net.sf.kdgcommons</groupId>
+            <artifactId>kdgcommons</artifactId>
+            <version>${kdgcommons.version}</version>
+        </dependency>      
     </dependencies>
 
 </project>

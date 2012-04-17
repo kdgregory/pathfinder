@@ -14,6 +14,7 @@
     </description>
 
     <modules>
+        <module>test-war-servlet</module>
         <module>test-wars</module>
         <module>lib-core</module>
         <module>lib-servlet</module>
@@ -25,17 +26,21 @@
         <!-- all dependency versions are specified here -->
         <junit.version>4.10</junit.version>
         <practicalxml.version>1.1.11</practicalxml.version>
-        <kdgcommons.version>1.0.1</kdgcommons.version>
+        <kdgcommons.version>1.0.2</kdgcommons.version>
         <servlet.version>2.4</servlet.version>
+
+        <!-- versions for the build tool itself are here -->
+        <plugin.compiler.version>2.3.2</plugin.compiler.version>
     </properties>
 
 
-    <!-- these dependencies apply to everyone; modules specify additional -->
+    <!-- these dependencies apply to everyone; modules specify their own -->
     <dependencies>
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
             <version>${junit.version}</version>
+            <scope>test</scope>
         </dependency>
     </dependencies>
 
@@ -45,6 +50,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
+                <version>${plugin.compiler.version}</version>
                 <configuration>
                     <source>1.6</source>
                     <target>1.6</target>
