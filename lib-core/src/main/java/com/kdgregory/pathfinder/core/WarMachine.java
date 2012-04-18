@@ -14,11 +14,33 @@
 
 package com.kdgregory.pathfinder.core;
 
+import java.util.Map;
+
+import org.w3c.dom.Document;
+
 
 /**
- *  This is how the {@link Inspector}s access the web-app.
+ *  Extracts information from the WAR, for use by {@link Inspector}s.
+ *  <p>
+ *  An implementation may choose to fully extract all information at the time
+ *  of construction, or may defer operations. They are not required to be
+ *  thread-safe.
  */
 public interface WarMachine
 {
+    /**
+     *  Returns the <code>web.xml</code> as a parsed XML DOM. Implementations
+     *  may return a shared, modifiable instance of the DOM; callers must not
+     *  modify the returned object.
+     */
+    public Document getWebXml();
 
+
+    /**
+     *  Returns the servlet mappings from the WAR's <code>web.xml</code>, joining
+     *  <code>servlet</code> entries to <code>servlet-mapping</code> entries. The
+     *  map's key values are the <code>url-pattern</code> from the latter, mapped
+     *  to the <code>servlet-class</code> of the latter.
+     */
+    public Map<String,String> getServletMappings();
 }

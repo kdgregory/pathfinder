@@ -1,20 +1,26 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <web-app version="2.4" xmlns="http://java.sun.com/xml/ns/j2ee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://java.sun.com/xml/ns/j2ee http://java.sun.com/xml/ns/j2ee/web-app_2_4.xsd">
+
+    <!-- this WAR has only one servlet -->
     <servlet>
         <servlet-name>MyServlet</servlet-name>
         <servlet-class>com.example.servlet.SomeServlet</servlet-class>
     </servlet>
+
+    <!-- but it's mapped to two URLs -->
     <servlet-mapping>
         <servlet-name>MyServlet</servlet-name>
         <url-pattern>/servlet</url-pattern>
     </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>MyServlet</servlet-name>
+        <url-pattern>/servlet2</url-pattern>
+    </servlet-mapping>
+
     <session-config>
-        <session-timeout>
-            30
-        </session-timeout>
+        <session-timeout>30</session-timeout>
     </session-config>
     <welcome-file-list>
         <welcome-file>index.jsp</welcome-file>
-        <welcome-file>index.html</welcome-file>
-        </welcome-file-list>
+    </welcome-file-list>
 </web-app>
