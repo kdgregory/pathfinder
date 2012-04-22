@@ -28,11 +28,19 @@
         </dependency>
 
         <dependency>
+            <groupId>commons-io</groupId>
+            <artifactId>commons-io</artifactId>
+            <version>${commons.io.version}</version>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
             <!-- http://sourceforge.net/projects/kdgcommons -->
             <groupId>net.sf.kdgcommons</groupId>
             <artifactId>kdgcommons</artifactId>
             <version>${kdgcommons.version}</version>
         </dependency>
+
         <dependency>
             <groupId>net.sf.practicalxml</groupId>
             <artifactId>practicalxml</artifactId>

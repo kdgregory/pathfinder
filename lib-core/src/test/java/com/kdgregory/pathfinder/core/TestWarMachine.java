@@ -15,12 +15,16 @@
 package com.kdgregory.pathfinder.core;
 
 import java.io.File;
+import java.io.InputStream;
+import java.util.List;
 import java.util.Map;
 
 import org.w3c.dom.Document;
 
 import org.junit.Test;
 import static org.junit.Assert.*;
+
+import org.apache.commons.io.IOUtils;
 
 import net.sf.kdgcommons.io.IOUtil;
 import net.sf.practicalxml.DomUtil;
@@ -31,6 +35,8 @@ import com.kdgregory.pathfinder.util.TestHelpers;
 
 public class TestWarMachine
 {
+    private final static String TEST_WAR = "pathfinder-test-war-servlet.war";
+
 
     @Test(expected=IllegalArgumentException.class)
     public void testInvalidWarfile() throws Exception
@@ -43,7 +49,7 @@ public class TestWarMachine
     @Test
     public void testGetWebXml() throws Exception
     {
-        WarMachine machine = TestHelpers.createWarMachine("pathfinder-test-war-servlet.war");
+        WarMachine machine = TestHelpers.createWarMachine(TEST_WAR);
 
         Document dom = machine.getWebXml();
         assertEquals("web-app", DomUtil.getLocalName(dom.getDocumentElement()));
@@ -53,11 +59,71 @@ public class TestWarMachine
     @Test
     public void testGetServletMappings() throws Exception
     {
-        WarMachine machine = TestHelpers.createWarMachine("pathfinder-test-war-servlet.war");
+        WarMachine machine = TestHelpers.createWarMachine(TEST_WAR);
 
         Map<String,String> mappings = machine.getServletMappings();
         assertEquals("number of mappings", 2, mappings.size());
         assertEquals("mapping #1", "com.example.servlet.SomeServlet", mappings.get("/servlet"));
         assertEquals("mapping #2", "com.example.servlet.SomeServlet", mappings.get("/servlet2"));
     }
+
+
+    @Test
+    public void testFileLists() throws Exception
+    {
+        WarMachine machine = TestHelpers.createWarMachine(TEST_WAR);
+
+        // jar tvf WARFILE | grep -v '/$' | wc -l
+        List<String> allFiles =  machine.getAllFiles();
+        assertEquals("all files", 9, allFiles.size());
+        assertTrue("all files contains /index.jsp",
+                   allFiles.contains("/index.jsp"));
+
+        List<String> publicFiles = machine.getPublicFiles();
+        assertEquals("public files", 3, publicFiles.size());
+        assertTrue("public files should contain /index.jsp",
+                    publicFiles.contains("/index.jsp"));
+        assertFalse("public files shouldn't contain /WEB-INF/views/hidden.jsp",
+                    publicFiles.contains("/WEB-INF/views/hidden.jsp"));
+
+        List<String> privateFiles = machine.getPrivateFiles();
+        assertEquals("private files", 6, privateFiles.size());
+        assertFalse("private files shouldn't contain /index.jsp",
+                    privateFiles.contains("/index.jsp"));
+        assertTrue("private files should contain /WEB-INF/views/hidden.jsp",
+                    privateFiles.contains("/WEB-INF/views/hidden.jsp"));
+    }
+
+
+    @Test
+    public void testOpenFile() throws Exception
+    {
+        WarMachine machine = TestHelpers.createWarMachine(TEST_WAR);
+
+        InputStream in = machine.openFile("/index.jsp");
+        assertNotNull("able to open public file", in);
+
+        String content = IOUtils.toString(in);
+        assertTrue("content looks like a JSP", content.contains("<html>"));
+    }
+
+
+    @Test
+    public void testOpenFileDoesntThrowWithBogusFilename() throws Exception
+    {
+        WarMachine machine = TestHelpers.createWarMachine(TEST_WAR);
+
+        assertNull("bogus file returns null", machine.openFile("/bogus.bogus"));
+    }
+
+
+    @Test
+    public void testOpenFileRequiresAbsolutePath() throws Exception
+    {
+        WarMachine machine = TestHelpers.createWarMachine(TEST_WAR);
+
+        assertNull("able to open with relative path", machine.openFile("index.jsp"));
+    }
+
+
 }

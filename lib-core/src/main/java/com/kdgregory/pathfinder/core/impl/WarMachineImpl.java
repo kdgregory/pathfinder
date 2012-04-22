@@ -15,19 +15,23 @@
 package com.kdgregory.pathfinder.core.impl;
 
 import java.io.File;
+import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipFile;
+import java.util.jar.JarEntry;
+import java.util.jar.JarFile;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 import org.xml.sax.InputSource;
 
+import net.sf.kdgcommons.collections.CollectionUtil;
 import net.sf.kdgcommons.io.IOUtil;
 import net.sf.practicalxml.ParseUtil;
 import net.sf.practicalxml.xpath.XPathWrapper;
@@ -48,7 +52,7 @@ implements WarMachine
 //  Instance Variables and Constructor
 //----------------------------------------------------------------------------
 
-    private ZipFile mappedWar;
+    private JarFile mappedWar;
     private Document webXml;
     private Map<String,String> servletMappings = new HashMap<String,String>();
 
@@ -76,7 +80,7 @@ implements WarMachine
     {
         try
         {
-            mappedWar = new ZipFile(warFile);
+            mappedWar = new JarFile(warFile);
         }
         catch (Exception ex)
         {
@@ -90,7 +94,7 @@ implements WarMachine
         InputStream entryStream = null;
         try
         {
-            ZipEntry entry = mappedWar.getEntry("WEB-INF/web.xml");
+            JarEntry entry = mappedWar.getJarEntry("WEB-INF/web.xml");
             if (entry == null)
                 throw new IllegalArgumentException("missing web.xml");
 
@@ -176,9 +180,53 @@ implements WarMachine
     }
 
 
-//----------------------------------------------------------------------------
-//  Helper Methods
-//----------------------------------------------------------------------------
+    @Override
+    public List<String> getAllFiles()
+    {
+        List<String> result = new ArrayList<String>(mappedWar.size());
+        for (Enumeration<JarEntry> itx = mappedWar.entries() ; itx.hasMoreElements() ; )
+        {
+            JarEntry entry = itx.nextElement();
+            String filename = entry.getName();
+            if (! filename.endsWith("/"))
+                result.add("/" + filename);
+        }
+        return result;
+    }
 
 
+    @Override
+    public List<String> getPublicFiles()
+    {
+        List<String> filenames = getAllFiles();
+        filenames = CollectionUtil.filter(filenames, "/WEB-INF.*", false);
+        filenames = CollectionUtil.filter(filenames, "/META-INF.*", false);
+        return filenames;
+    }
+
+
+    @Override
+    public List<String> getPrivateFiles()
+    {
+        List<String> filenames = getAllFiles();
+        List<String> result = new ArrayList<String>(filenames.size());
+        result.addAll(CollectionUtil.filter(filenames, "/WEB-INF.*", true));
+        result.addAll(CollectionUtil.filter(filenames, "/META-INF.*", true));
+        return result;
+    }
+
+
+    @Override
+    public InputStream openFile(String filename) throws IOException
+    {
+        if (!filename.startsWith("/"))
+            return null;
+
+        filename = filename.substring(1);
+        JarEntry entry = mappedWar.getJarEntry(filename);
+        if (entry == null)
+            return null;
+
+        return mappedWar.getInputStream(entry);
+    }
 }

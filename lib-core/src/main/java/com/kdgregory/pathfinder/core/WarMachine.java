@@ -14,6 +14,9 @@
 
 package com.kdgregory.pathfinder.core;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.List;
 import java.util.Map;
 
 import org.w3c.dom.Document;
@@ -43,4 +46,33 @@ public interface WarMachine
      *  to the <code>servlet-class</code> of the latter.
      */
     public Map<String,String> getServletMappings();
+
+
+    /**
+     *  Returns a list of all entries in the WAR, prefixed with a leading slash.
+     */
+    public List<String> getAllFiles();
+
+
+    /**
+     *  Returns a list of the "public" entries in the WAR: those not under
+     *  META-INF or WEB-INF. This is where you'll find the JSPs.
+     */
+    public List<String> getPublicFiles();
+
+
+    /**
+     *  Returns a list of the "private" entries in the WAR: those under META-INF
+     *  and WEB-INF.
+     */
+    public List<String> getPrivateFiles();
+
+
+    /**
+     *  Returns a stream for the named file, <code>null</code> if the file doesn't
+     *  exist. You are encouraged to close this stream, but as it isn't a physical
+     *  file handle, there isn't a penalty to pay for not closing it.
+     */
+    public InputStream openFile(String filename)
+    throws IOException;
 }
