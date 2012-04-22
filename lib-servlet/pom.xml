@@ -20,6 +20,19 @@
     </description>
 
     <dependencies>
+        <dependency>
+            <groupId>com.kdgregory.pathfinder</groupId>
+            <artifactId>pathfinder-test-wars</artifactId>
+            <version>${project.version}</version>
+            <classifier>archive</classifier>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>com.kdgregory.pathfinder</groupId>
+            <artifactId>pathfinder-core</artifactId>
+            <version>${project.version}</version>
+        </dependency>
     </dependencies>
 
 </project>

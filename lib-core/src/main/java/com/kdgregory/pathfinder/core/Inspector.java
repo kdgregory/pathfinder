@@ -21,5 +21,10 @@ package com.kdgregory.pathfinder.core;
  */
 public interface Inspector
 {
-
+    /**
+     *  Inspects the passed WAR and updates the path repository with any
+     *  paths found. Note that existing paths may be replaced as part of
+     *  this process.
+     */
+    public void inspect(WarMachine war, PathRepo paths);
 }
