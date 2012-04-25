@@ -16,6 +16,8 @@ package com.kdgregory.pathfinder.servlet;
 
 import java.util.Map;
 
+import org.apache.log4j.Logger;
+
 import com.kdgregory.pathfinder.core.Inspector;
 import com.kdgregory.pathfinder.core.PathRepo;
 import com.kdgregory.pathfinder.core.PathRepo.Destination;
@@ -24,6 +26,8 @@ import com.kdgregory.pathfinder.core.WarMachine;
 public class ServletInspector
 implements Inspector
 {
+    private Logger logger = Logger.getLogger(getClass());
+    
 //----------------------------------------------------------------------------
 //  Inspector
 //----------------------------------------------------------------------------
@@ -102,7 +106,11 @@ implements Inspector
     {
         for (Map.Entry<String,String> servlet : war.getServletMappings().entrySet())
         {
-            paths.put(servlet.getKey(), new ServletDestination(servlet.getValue()));
+            String servletUrl = servlet.getKey();
+            String servletClass = servlet.getValue();
+            
+            logger.debug("added servlet: " + servletUrl + " => " + servletClass);
+            paths.put(servlet.getKey(), new ServletDestination(servletClass));
         }
     }
 
@@ -113,11 +121,15 @@ implements Inspector
         {
             filename = filename.toLowerCase();
             if (filename.endsWith(".jsp"))
+            {
+                logger.debug("added JSP: " + filename);
                 paths.put(filename, new JspDestination(filename));
-            if (filename.endsWith(".html"))
+            }
+            if (filename.endsWith(".html") || filename.endsWith(".htm")) 
+            {
+                logger.debug("added static HTML: " + filename);
                 paths.put(filename, new HtmlDestination(filename));
-            if (filename.endsWith(".htm"))
-                paths.put(filename, new HtmlDestination(filename));
+            }
         }
     }
 

@@ -31,6 +31,8 @@ import org.w3c.dom.Element;
 
 import org.xml.sax.InputSource;
 
+import org.apache.log4j.Logger;
+
 import net.sf.kdgcommons.collections.CollectionUtil;
 import net.sf.kdgcommons.io.IOUtil;
 import net.sf.practicalxml.ParseUtil;
@@ -51,6 +53,8 @@ implements WarMachine
 //----------------------------------------------------------------------------
 //  Instance Variables and Constructor
 //----------------------------------------------------------------------------
+    
+    private Logger logger = Logger.getLogger(getClass());
 
     private JarFile mappedWar;
     private Document webXml;
@@ -80,6 +84,7 @@ implements WarMachine
     {
         try
         {
+            logger.debug("opening file: " + warFile);
             mappedWar = new JarFile(warFile);
         }
         catch (Exception ex)
@@ -94,10 +99,12 @@ implements WarMachine
         InputStream entryStream = null;
         try
         {
+            logger.debug("looking for web.xml");
             JarEntry entry = mappedWar.getJarEntry("WEB-INF/web.xml");
             if (entry == null)
                 throw new IllegalArgumentException("missing web.xml");
 
+            logger.debug("parsing web.xml");
             entryStream = mappedWar.getInputStream(entry);
             webXml = ParseUtil.parse(new InputSource(entryStream));
         }
@@ -134,6 +141,7 @@ implements WarMachine
         {
             Map<String,String> servletLookup = new HashMap<String,String>();
             List<Element> servlets = xpServlet.evaluate(webXml, Element.class);
+            logger.debug("found " + servlets.size() + " <servlet> entries");
             for (Element servlet : servlets)
             {
                 String servletName = xpServletName.evaluateAsString(servlet);
@@ -142,6 +150,7 @@ implements WarMachine
             }
 
             List<Element> mappings = xpMapping.evaluate(webXml, Element.class);
+            logger.debug("found " + mappings.size() + " <servlet-mapping> entries");
             for (Element mapping : mappings)
             {
                 String servletName = xpMappingName.evaluateAsString(mapping);

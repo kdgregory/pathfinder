@@ -33,14 +33,17 @@
             <version>${commons.io.version}</version>
             <scope>test</scope>
         </dependency>
-
+        <dependency>
+            <groupId>log4j</groupId>
+            <artifactId>log4j</artifactId>
+            <version>${log4j.version}</version>
+        </dependency>
         <dependency>
             <!-- http://sourceforge.net/projects/kdgcommons -->
             <groupId>net.sf.kdgcommons</groupId>
             <artifactId>kdgcommons</artifactId>
             <version>${kdgcommons.version}</version>
         </dependency>
-
         <dependency>
             <groupId>net.sf.practicalxml</groupId>
             <artifactId>practicalxml</artifactId>
