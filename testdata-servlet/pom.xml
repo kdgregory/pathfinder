@@ -8,7 +8,7 @@
         <version>1.0-SNAPSHOT</version>
     </parent>
 
-    <artifactId>pathfinder-test-war-servlet</artifactId>
+    <artifactId>pathfinder-testdata-servlet</artifactId>
     <packaging>war</packaging>
 
     <name>WAR for Base Servlet Testing</name>
@@ -19,6 +19,13 @@
             <artifactId>servlet-api</artifactId>
             <version>${javax.servlet.version}</version>
             <scope>provided</scope>
+        </dependency>
+        
+        <!-- we use this JAR to verify that we can retrieve a file from the classpath -->
+        <dependency>
+            <groupId>net.sf.practicalxml</groupId>
+            <artifactId>practicalxml</artifactId>
+            <version>${practicalxml.version}</version>
         </dependency>
     </dependencies>
 

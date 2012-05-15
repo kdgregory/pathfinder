@@ -28,6 +28,11 @@
             <artifactId>pathfinder-servlet</artifactId>
             <version>${project.version}</version>
         </dependency>
+        <dependency>
+            <groupId>com.kdgregory.pathfinder</groupId>
+            <artifactId>pathfinder-spring</artifactId>
+            <version>${project.version}</version>
+        </dependency>
     </dependencies>
 
     <build>

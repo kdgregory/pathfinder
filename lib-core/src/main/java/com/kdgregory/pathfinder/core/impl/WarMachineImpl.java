@@ -25,6 +25,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
+import java.util.jar.JarInputStream;
+import java.util.zip.ZipEntry;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -36,7 +38,8 @@ import org.apache.log4j.Logger;
 import net.sf.kdgcommons.collections.CollectionUtil;
 import net.sf.kdgcommons.io.IOUtil;
 import net.sf.practicalxml.ParseUtil;
-import net.sf.practicalxml.xpath.XPathWrapper;
+import net.sf.practicalxml.xpath.XPathWrapperFactory;
+import net.sf.practicalxml.xpath.XPathWrapperFactory.CacheType;
 
 import com.kdgregory.pathfinder.core.WarMachine;
 
@@ -47,18 +50,19 @@ import com.kdgregory.pathfinder.core.WarMachine;
 public class WarMachineImpl
 implements WarMachine
 {
-    // I'm sure this is defined somewhere in the J2EE API ...
-    private final static String NS_SERVLET = "http://java.sun.com/xml/ns/j2ee";
 
 //----------------------------------------------------------------------------
 //  Instance Variables and Constructor
 //----------------------------------------------------------------------------
-    
+
     private Logger logger = Logger.getLogger(getClass());
 
     private JarFile mappedWar;
     private Document webXml;
-    private Map<String,String> servletMappings = new HashMap<String,String>();
+    private List<ServletMapping> servletMappings;
+
+    private XPathWrapperFactory xpathFact = new XPathWrapperFactory(CacheType.SIMPLE)
+                                            .bindNamespace("j2ee", "http://java.sun.com/xml/ns/j2ee");
 
 
     /**
@@ -70,15 +74,12 @@ implements WarMachine
     public WarMachineImpl(File warFile)
     {
         openFile(warFile);
+
+        // if the file doesn't have web.xml, it's not a war, so failfast
         parseWebXml();
-        parseServletMappings();
     }
 
-
-//----------------------------------------------------------------------------
-//  the following methods are called by the ctor; they're broken out because
-//  each throws its own IllegalArgumentException
-//----------------------------------------------------------------------------
+    // the following methods are called by the ctor; broken out for readability
 
     private void openFile(File warFile)
     {
@@ -92,7 +93,6 @@ implements WarMachine
             throw new IllegalArgumentException("unable to open: " + mappedWar, ex);
         }
     }
-
 
     private void parseWebXml()
     {
@@ -121,56 +121,6 @@ implements WarMachine
     }
 
 
-    private void parseServletMappings()
-    {
-        // prebuild all XPath; some of them get reused
-        XPathWrapper xpServlet      = new XPathWrapper("/ns:web-app/ns:servlet")
-                                      .bindNamespace("ns", NS_SERVLET);
-        XPathWrapper xpServletName  = new XPathWrapper("ns:servlet-name")
-                                      .bindNamespace("ns", NS_SERVLET);
-        XPathWrapper xpServletClass = new XPathWrapper("ns:servlet-class")
-                                     .bindNamespace("ns", NS_SERVLET);
-        XPathWrapper xpMapping      = new XPathWrapper("/ns:web-app/ns:servlet-mapping")
-                                      .bindNamespace("ns", NS_SERVLET);
-        XPathWrapper xpMappingName  = new XPathWrapper("ns:servlet-name")
-                                      .bindNamespace("ns", NS_SERVLET);
-        XPathWrapper xpMappingUrl   = new XPathWrapper("ns:url-pattern")
-                                      .bindNamespace("ns", NS_SERVLET);
-
-        try
-        {
-            Map<String,String> servletLookup = new HashMap<String,String>();
-            List<Element> servlets = xpServlet.evaluate(webXml, Element.class);
-            logger.debug("found " + servlets.size() + " <servlet> entries");
-            for (Element servlet : servlets)
-            {
-                String servletName = xpServletName.evaluateAsString(servlet);
-                String servletClass = xpServletClass.evaluateAsString(servlet);
-                servletLookup.put(servletName, servletClass);
-            }
-
-            List<Element> mappings = xpMapping.evaluate(webXml, Element.class);
-            logger.debug("found " + mappings.size() + " <servlet-mapping> entries");
-            for (Element mapping : mappings)
-            {
-                String servletName = xpMappingName.evaluateAsString(mapping);
-                String mappingUrl = xpMappingUrl.evaluateAsString(mapping);
-                String servletClass = servletLookup.get(servletName);
-                if (servletClass == null)
-                    throw new IllegalArgumentException("<servlet-mapping> \"" + servletName
-                                                       + "\" does not have <servlet> entry");
-                servletMappings.put(mappingUrl, servletClass);
-            }
-        }
-        catch (Exception ex)
-        {
-            if (ex instanceof IllegalArgumentException)
-                throw (IllegalArgumentException)ex;
-            throw new IllegalArgumentException("unable to process servlet mappings", ex);
-        }
-    }
-
-
 //----------------------------------------------------------------------------
 //  WarMachine implementation
 //----------------------------------------------------------------------------
@@ -183,9 +133,12 @@ implements WarMachine
 
 
     @Override
-    public Map<String,String> getServletMappings()
+    public List<ServletMapping> getServletMappings()
     {
-        return Collections.unmodifiableMap(servletMappings);
+        if (servletMappings == null)
+            parseServletMappings();
+
+        return Collections.unmodifiableList(servletMappings);
     }
 
 
@@ -226,7 +179,8 @@ implements WarMachine
 
 
     @Override
-    public InputStream openFile(String filename) throws IOException
+    public InputStream openFile(String filename)
+    throws IOException
     {
         if (!filename.startsWith("/"))
             return null;
@@ -237,5 +191,145 @@ implements WarMachine
             return null;
 
         return mappedWar.getInputStream(entry);
+    }
+
+
+    @Override
+    public InputStream openClasspathFile(String filename)
+    throws IOException
+    {
+        logger.debug("looking for " + filename + " on classpath");
+        if (filename.startsWith("/"))
+            filename = filename.substring(1);
+
+        InputStream in = openFile("/WEB-INF/classes/" + filename);
+        if (in != null)
+        {
+            logger.debug("found " + filename + " in WEB-INF/classes");
+            return in;
+        }
+
+        for (String jarFile : getPrivateFiles())
+        {
+            if (!jarFile.startsWith("/WEB-INF/lib") || !jarFile.endsWith(".jar"))
+                continue;
+
+            logger.trace("looking for " + filename + " in " + jarFile);
+            InputStream ii = openFile(jarFile);
+            try
+            {
+                JarInputStream jj = new JarInputStream(ii);
+                ZipEntry entry = null;
+                while ((entry = jj.getNextEntry()) != null)
+                {
+                    if (entry.getName().equals(filename))
+                    {
+                        logger.debug("found " + filename + " in " + jarFile);
+                        return jj;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                logger.debug("error processing " + jarFile, ex);
+                // fall through to close the file and try the next
+            }
+            IOUtil.closeQuietly(ii);
+        }
+
+        logger.debug("unable to find " + filename + " on classpath");
+        return null;
+    }
+
+
+//----------------------------------------------------------------------------
+//  Internals
+//----------------------------------------------------------------------------
+
+    private void parseServletMappings()
+    {
+        servletMappings = new ArrayList<ServletMapping>();
+
+        Map<String,Element> servletLookup = new HashMap<String,Element>();
+        List<Element> servlets = xpathFact.newXPath("/j2ee:web-app/j2ee:servlet").evaluate(webXml, Element.class);
+        logger.debug("found " + servlets.size() + " <servlet> entries");
+        for (Element servlet : servlets)
+        {
+            String servletName = xpathFact.newXPath("j2ee:servlet-name").evaluateAsString(servlet);
+            servletLookup.put(servletName, servlet);
+        }
+
+        List<Element> mappings = xpathFact.newXPath("/j2ee:web-app/j2ee:servlet-mapping").evaluate(webXml, Element.class);
+        logger.debug("found " + mappings.size() + " <servlet-mapping> entries");
+        for (Element mapping : mappings)
+        {
+            String servletName = xpathFact.newXPath("j2ee:servlet-name").evaluateAsString(mapping);
+            String mappingUrl = xpathFact.newXPath("j2ee:url-pattern").evaluateAsString(mapping);
+            Element servlet = servletLookup.get(servletName);
+            if (servlet == null)
+                logger.warn("<servlet-mapping> \"" + mappingUrl
+                            + "\" does not have <servlet> entry");
+            servletMappings.add(new ServletMappingImpl(mappingUrl, servlet));
+        }
+        Collections.sort(servletMappings);
+    }
+
+
+//----------------------------------------------------------------------------
+//  Supporting classes
+//----------------------------------------------------------------------------
+
+    private class ServletMappingImpl
+    implements ServletMapping
+    {
+        private String mappingUrl;
+        private String servletName;
+        private String servletClass;
+        private Map<String,String> initParams = new HashMap<String,String>();
+
+        public ServletMappingImpl(String mappingUrl, Element servlet)
+        {
+            this.mappingUrl = mappingUrl;
+            this.servletName = xpathFact.newXPath("j2ee:servlet-name").evaluateAsString(servlet);
+            this.servletClass = xpathFact.newXPath("j2ee:servlet-class").evaluateAsString(servlet);
+
+            List<Element> params = xpathFact.newXPath("j2ee:init-param").evaluate(servlet, Element.class);
+            for (Element param : params)
+            {
+                String paramName = xpathFact.newXPath("j2ee:param-name").evaluateAsString(param);
+                String paramValue = xpathFact.newXPath("j2ee:param-value").evaluateAsString(param);
+                initParams.put(paramName, paramValue);
+            }
+        }
+
+        @Override
+        public String getUrlPattern()
+        {
+            return mappingUrl;
+        }
+
+        @Override
+        public String getServletName()
+        {
+            return servletName;
+        }
+
+        @Override
+        public String getServletClass()
+        {
+            return servletClass;
+        }
+
+        @Override
+        public Map<String,String> getInitParams()
+        {
+            return Collections.unmodifiableMap(initParams);
+        }
+
+        @Override
+        public int compareTo(ServletMapping that)
+        {
+            return getUrlPattern().compareTo(that.getUrlPattern());
+        }
     }
 }

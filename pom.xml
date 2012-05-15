@@ -13,26 +13,34 @@
         A tool for finding the URLs supported by a web application
     </description>
 
+
     <modules>
-        <module>test-war-servlet</module>
-        <module>test-wars</module>
+        <!-- see also "testdata" profile -->
         <module>lib-core</module>
         <module>lib-servlet</module>
+        <module>lib-spring</module>
         <module>pathfinder</module>
     </modules>
 
 
     <properties>
+        <!-- build configuration props, because Maven can't pick a sensible default -->
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+
         <!-- all dependency versions are specified here -->
         <junit.version>4.10</junit.version>
         <commons.io.version>2.3</commons.io.version>
         <javax.servlet.version>2.4</javax.servlet.version>
-        <kdgcommons.version>1.0.3</kdgcommons.version>
+        <javax.jstl.version>1.1.1</javax.jstl.version>
+        <kdgcommons.version>1.0.5-SNAPSHOT</kdgcommons.version>
         <log4j.version>1.2.12</log4j.version>
-        <practicalxml.version>1.1.11</practicalxml.version>
+        <springframework.version>3.1.1.RELEASE</springframework.version>
+        <practicalxml.version>1.1.12-SNAPSHOT</practicalxml.version>
 
-        <!-- versions for the build tool itself are here -->
+        <!-- versions for the build tools themselve are here -->
         <plugin.compiler.version>2.3.2</plugin.compiler.version>
+        <plugin.cobertura.version>2.5.1</plugin.cobertura.version>
     </properties>
 
 
@@ -68,6 +76,7 @@
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>cobertura-maven-plugin</artifactId>
+                <version>${plugin.cobertura.version}</version>
                 <configuration>
                     <instrumentation>
                         <excludes>
@@ -86,6 +95,19 @@
             </plugin>
         </plugins>
     </reporting>
+
+
+    <profiles>
+        <profile>
+            <id>testdata</id>
+            <modules>
+                <module>testdata-servlet</module>
+                <module>testdata-spring2-simple</module>
+                <module>testdata</module>
+            </modules>
+        </profile>
+    </profiles>
+
 
     <licenses>
         <license>

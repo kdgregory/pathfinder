@@ -17,7 +17,6 @@ package com.kdgregory.pathfinder.core;
 import java.io.File;
 import java.io.InputStream;
 import java.util.List;
-import java.util.Map;
 
 import org.w3c.dom.Document;
 
@@ -29,14 +28,37 @@ import org.apache.commons.io.IOUtils;
 import net.sf.kdgcommons.io.IOUtil;
 import net.sf.practicalxml.DomUtil;
 
+import com.kdgregory.pathfinder.core.WarMachine.ServletMapping;
 import com.kdgregory.pathfinder.core.impl.WarMachineImpl;
+import com.kdgregory.pathfinder.spring.test.WarNames;
 import com.kdgregory.pathfinder.util.TestHelpers;
 
 
 public class TestWarMachine
 {
-    private final static String TEST_WAR = "pathfinder-test-war-servlet.war";
 
+//----------------------------------------------------------------------------
+//  Support Code
+//----------------------------------------------------------------------------
+
+    /**
+     *  Asserts that the passed InputStream is a classfile, by looking for the magic
+     *  number at its start. Closes the stream after making the assertion.
+     */
+    public static void assertClassFile(String message, InputStream in)
+    throws Exception
+    {
+        assertEquals(message + ": byte 0", 0xCA, in.read());
+        assertEquals(message + ": byte 1", 0xFE, in.read());
+        assertEquals(message + ": byte 2", 0xBA, in.read());
+        assertEquals(message + ": byte 3", 0xBE, in.read());
+        in.close();
+    }
+
+
+//----------------------------------------------------------------------------
+//  Testcases
+//----------------------------------------------------------------------------
 
     @Test(expected=IllegalArgumentException.class)
     public void testInvalidWarfile() throws Exception
@@ -49,7 +71,7 @@ public class TestWarMachine
     @Test
     public void testGetWebXml() throws Exception
     {
-        WarMachine machine = TestHelpers.createWarMachine(TEST_WAR);
+        WarMachine machine = TestHelpers.createWarMachine(WarNames.SERVLET);
 
         Document dom = machine.getWebXml();
         assertEquals("web-app", DomUtil.getLocalName(dom.getDocumentElement()));
@@ -59,23 +81,41 @@ public class TestWarMachine
     @Test
     public void testGetServletMappings() throws Exception
     {
-        WarMachine machine = TestHelpers.createWarMachine(TEST_WAR);
+        WarMachine machine = TestHelpers.createWarMachine(WarNames.SERVLET);
 
-        Map<String,String> mappings = machine.getServletMappings();
+        List<ServletMapping> mappings = machine.getServletMappings();
         assertEquals("number of mappings", 2, mappings.size());
-        assertEquals("mapping #1", "com.example.servlet.SomeServlet", mappings.get("/servlet"));
-        assertEquals("mapping #2", "com.example.servlet.SomeServlet", mappings.get("/servlet2"));
+
+        ServletMapping mapping1 = mappings.get(0);
+        assertEquals("mapping #0 path", "/servlet",
+                     mapping1.getUrlPattern());
+        assertEquals("mapping #0 class", "com.example.servlet.SomeServlet",
+                     mapping1.getServletClass());
+        assertEquals("mapping #0 param:foo", "bar",
+                     mapping1.getInitParams().get("foo"));
+        assertEquals("mapping #0 argle", "bargle",
+                     mapping1.getInitParams().get("argle"));
+
+        ServletMapping mapping2 = mappings.get(1);
+        assertEquals("mapping #1 path", "/servlet2",
+                     mapping2.getUrlPattern());
+        assertEquals("mapping #1 class", "com.example.servlet.SomeServlet",
+                     mapping2.getServletClass());
+        assertEquals("mapping #1 param:foo", "bar",
+                     mapping2.getInitParams().get("foo"));
+        assertEquals("mapping #1 argle", "bargle",
+                     mapping2.getInitParams().get("argle"));
     }
 
 
     @Test
     public void testFileLists() throws Exception
     {
-        WarMachine machine = TestHelpers.createWarMachine(TEST_WAR);
+        WarMachine machine = TestHelpers.createWarMachine(WarNames.SERVLET);
 
         // jar tvf WARFILE | grep -v '/$' | wc -l
         List<String> allFiles =  machine.getAllFiles();
-        assertEquals("all files", 9, allFiles.size());
+        assertEquals("all files", 10, allFiles.size());
         assertTrue("all files contains /index.jsp",
                    allFiles.contains("/index.jsp"));
 
@@ -87,7 +127,7 @@ public class TestWarMachine
                     publicFiles.contains("/WEB-INF/views/hidden.jsp"));
 
         List<String> privateFiles = machine.getPrivateFiles();
-        assertEquals("private files", 6, privateFiles.size());
+        assertEquals("private files", 7, privateFiles.size());
         assertFalse("private files shouldn't contain /index.jsp",
                     privateFiles.contains("/index.jsp"));
         assertTrue("private files should contain /WEB-INF/views/hidden.jsp",
@@ -98,7 +138,7 @@ public class TestWarMachine
     @Test
     public void testOpenFile() throws Exception
     {
-        WarMachine machine = TestHelpers.createWarMachine(TEST_WAR);
+        WarMachine machine = TestHelpers.createWarMachine(WarNames.SERVLET);
 
         InputStream in = machine.openFile("/index.jsp");
         assertNotNull("able to open public file", in);
@@ -111,7 +151,7 @@ public class TestWarMachine
     @Test
     public void testOpenFileDoesntThrowWithBogusFilename() throws Exception
     {
-        WarMachine machine = TestHelpers.createWarMachine(TEST_WAR);
+        WarMachine machine = TestHelpers.createWarMachine(WarNames.SERVLET);
 
         assertNull("bogus file returns null", machine.openFile("/bogus.bogus"));
     }
@@ -120,10 +160,33 @@ public class TestWarMachine
     @Test
     public void testOpenFileRequiresAbsolutePath() throws Exception
     {
-        WarMachine machine = TestHelpers.createWarMachine(TEST_WAR);
+        WarMachine machine = TestHelpers.createWarMachine(WarNames.SERVLET);
 
         assertNull("able to open with relative path", machine.openFile("index.jsp"));
     }
 
 
+    @Test
+    public void testOpenFileOnClasspath() throws Exception
+    {
+        WarMachine machine = TestHelpers.createWarMachine(WarNames.SERVLET);
+
+        // test 1: a servlet class, which will be under WEB-INF and easily recognized
+        //         note: relative filename
+
+        InputStream in1 = machine.openClasspathFile("com/example/servlet/SomeServlet.class");
+        assertNotNull("able to open classfile under WEB-INF/classes", in1);
+        assertClassFile("servlet class", in1);
+
+        // test 2: a classfile that lives in an included JAR (using absolute filename)
+
+        InputStream in2 = machine.openClasspathFile("/net/sf/practicalxml/DomUtil.class");
+        assertNotNull("able to open classfile in enclosed JAR", in2);
+        assertClassFile("JAR'd class", in2);
+
+        // test 3: a file that shouldn't appear on the classpath
+
+        InputStream in3 = machine.openClasspathFile("web.xml");
+        assertNull("shouldn't be able to open file not on classpath", in3);
+    }
 }

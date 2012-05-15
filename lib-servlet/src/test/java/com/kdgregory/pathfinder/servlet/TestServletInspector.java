@@ -20,6 +20,7 @@ import static org.junit.Assert.*;
 import com.kdgregory.pathfinder.core.PathRepo;
 import com.kdgregory.pathfinder.core.PathRepo.HttpMethod;
 import com.kdgregory.pathfinder.core.WarMachine;
+import com.kdgregory.pathfinder.spring.test.WarNames;
 import com.kdgregory.pathfinder.util.TestHelpers;
 
 
@@ -28,7 +29,7 @@ public class TestServletInspector
     @Test
     public void testHappyPath() throws Exception
     {
-        WarMachine machine = TestHelpers.createWarMachine("pathfinder-test-war-servlet.war");
+        WarMachine machine = TestHelpers.createWarMachine(WarNames.SERVLET);
         PathRepo repo = new PathRepo();
 
         (new ServletInspector()).inspect(machine, repo);

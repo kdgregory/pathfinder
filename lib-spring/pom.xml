@@ -8,15 +8,16 @@
         <version>1.0-SNAPSHOT</version>
     </parent>
 
-    <artifactId>pathfinder-servlet</artifactId>
+    <artifactId>pathfinder-spring</artifactId>
     <packaging>jar</packaging>
 
-    <name>PathFinder Servlet Handler</name>
+    <name>PathFinder Spring Handler</name>
 
     <description>
-        This library contains code to extract servlet paths from web.xml, and JSP
-        paths from the root of the WAR. It is the first Inspector applied, as all
-        other libraries are based on Servlet.
+        This library contains code to update paths that are handled by the
+        Spring DispatcherServlet. It supports XML- and annotation-driven
+        configuration, and will look inside classes that subclass Spring's
+        controllers.
     </description>
 
     <dependencies>
@@ -33,6 +34,12 @@
             <classifier>archive</classifier>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>com.kdgregory.pathfinder</groupId>
+            <artifactId>pathfinder-servlet</artifactId>
+            <version>${project.version}</version>
+            <scope>test</scope>
+        </dependency>
 
         <dependency>
             <groupId>com.kdgregory.pathfinder</groupId>
@@ -44,6 +51,21 @@
             <groupId>log4j</groupId>
             <artifactId>log4j</artifactId>
             <version>${log4j.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>net.sf.kdgcommons</groupId>
+            <artifactId>kdgcommons</artifactId>
+            <version>${kdgcommons.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>net.sf.practicalxml</groupId>
+            <artifactId>practicalxml</artifactId>
+            <version>${practicalxml.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-core</artifactId>
+            <version>${springframework.version}</version>
         </dependency>
     </dependencies>
 

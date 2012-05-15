@@ -70,7 +70,8 @@ implements Iterable<String>
     public interface Destination
     {
         /**
-         *  Returns a formatted description of this destination.
+         *  Returns a formatted description of this destination. This will
+         *  be used for final output.
          */
         @Override
         public String toString();
@@ -142,15 +143,47 @@ implements Iterable<String>
 
     /**
      *  Retrieves an unmodifiable view of the destination map for a given URL.
-     *  Note that URLs associated the "ALL" method will be a single entry in
-     *  the map, and may be overridden by explicit methods.
+     *  The returned map will be sorted by method.
      *  <p>
-     *  The returned map will be sorted by method (the JDK does not provide an
-     *  unmodifiable SortedMap).
+     *  Note 1: this method will never return null, but the map may be empty.
+     *  <p>
+     *  Note 2: the map may contain a single mapping, for "ALL"; the caller
+     *          is responsible for translating this to individual mappings
+     *          if desired.
      */
     public Map<HttpMethod,Destination> get(String url)
     {
         return Collections.unmodifiableMap(getOrCreateDestMap(url));
+    }
+
+
+    /**
+     *  Removes the destination(s) associated with the given URL and method.
+     *  If the passed method is "ALL", will remove all destinations (even if
+     *  they were added individually).
+     */
+    public void remove(String url, HttpMethod method)
+    {
+        Map<HttpMethod,Destination> destMap = urlMap.get(url);
+        if (destMap == null)
+            return;
+
+        if (method.equals(HttpMethod.ALL))
+        {
+            destMap.clear();
+            return;
+        }
+
+        if (destMap.containsKey(HttpMethod.ALL))
+        {
+            Destination dest = destMap.remove(HttpMethod.ALL);
+            destMap.put(HttpMethod.GET, dest);
+            destMap.put(HttpMethod.POST, dest);
+            destMap.put(HttpMethod.PUT, dest);
+            destMap.put(HttpMethod.DELETE, dest);
+        }
+
+        destMap.remove(method);
     }
 
 
@@ -162,6 +195,25 @@ implements Iterable<String>
     public Iterator<String> iterator()
     {
         return Collections.unmodifiableMap(urlMap).keySet().iterator();
+    }
+
+
+    /**
+     *  Returns a string containing the comma-separated URLs in this repo.
+     */
+    @Override
+    public String toString()
+    {
+        StringBuilder sb = new StringBuilder(64 * urlMap.size());
+        sb.append("[");
+        for (String url : urlMap.keySet())
+        {
+            if (sb.length() > 1)
+                sb.append(",");
+            sb.append(url);
+        }
+        sb.append("]");
+        return sb.toString();
     }
 
 

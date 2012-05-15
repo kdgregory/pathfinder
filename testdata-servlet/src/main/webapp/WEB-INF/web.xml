@@ -5,6 +5,14 @@
     <servlet>
         <servlet-name>MyServlet</servlet-name>
         <servlet-class>com.example.servlet.SomeServlet</servlet-class>
+        <init-param>
+            <param-name>foo</param-name>
+            <param-value>bar</param-value>
+        </init-param>
+        <init-param>
+            <param-name>argle</param-name>
+            <param-value>bargle</param-value>
+        </init-param>
     </servlet>
 
     <!-- but it's mapped to two URLs -->

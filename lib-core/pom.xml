@@ -21,7 +21,13 @@
     <dependencies>
         <dependency>
             <groupId>com.kdgregory.pathfinder</groupId>
-            <artifactId>pathfinder-test-wars</artifactId>
+            <artifactId>pathfinder-testdata</artifactId>
+            <version>${project.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.kdgregory.pathfinder</groupId>
+            <artifactId>pathfinder-testdata</artifactId>
             <version>${project.version}</version>
             <classifier>archive</classifier>
             <scope>test</scope>
@@ -39,7 +45,6 @@
             <version>${log4j.version}</version>
         </dependency>
         <dependency>
-            <!-- http://sourceforge.net/projects/kdgcommons -->
             <groupId>net.sf.kdgcommons</groupId>
             <artifactId>kdgcommons</artifactId>
             <version>${kdgcommons.version}</version>

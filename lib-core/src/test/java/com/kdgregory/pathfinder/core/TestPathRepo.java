@@ -31,6 +31,7 @@ public class TestPathRepo
 //  Test Data
 //----------------------------------------------------------------------------
 
+    private final static String BOGUS_URL       = "/blahblahblah";
     private final static String URL_1           = "/foo";
     private final static String URL_2           = "/bar";
     private final static String URL_3           = "/baz";
@@ -45,7 +46,7 @@ public class TestPathRepo
     private static class MyDestination
     implements PathRepo.Destination
     {
-        // nothing here; we check for instance identity
+        // nothing here
     }
 
 //----------------------------------------------------------------------------
@@ -86,7 +87,7 @@ public class TestPathRepo
         assertNull("no entry for arbitrary",        repo.get(URL_2, HttpMethod.POST));
 
         // getting nonexistent URL shouldn't throw NPE
-        assertNull(repo.get(URL_3, HttpMethod.GET));
+        assertNull(repo.get(BOGUS_URL, HttpMethod.GET));
     }
 
 
@@ -198,6 +199,40 @@ public class TestPathRepo
         assertNull("retrieve via POST",           repo.get(URL_1, HttpMethod.POST));
         assertNull("retrieve via PUT",            repo.get(URL_1, HttpMethod.PUT));
         assertNull("retrieve via DELETE",         repo.get(URL_1, HttpMethod.DELETE));
+    }
+
+
+    @Test
+    public void testRemove() throws Exception
+    {
+        PathRepo repo = new PathRepo();
+        repo.put(URL_1, HttpMethod.GET, DEST_1);
+        repo.put(URL_1, HttpMethod.POST, DEST_2);
+        repo.put(URL_2, HttpMethod.GET, DEST_1);
+        repo.put(URL_2, HttpMethod.POST, DEST_2);
+        repo.put(URL_3, HttpMethod.ALL, DEST_2);
+
+        // test 0: make sure we don't blow up when removing nonexistent entries
+        repo.remove(BOGUS_URL, HttpMethod.ALL);
+        repo.remove(URL_1, HttpMethod.DELETE);
+
+        // test 1: explicit entries, remove one of them
+        repo.remove(URL_1, HttpMethod.GET);
+        assertNull("removed url-1/dest-1", repo.get(URL_1, HttpMethod.GET));
+        assertSame("left url-1/dest-2",    DEST_2, repo.get(URL_1, HttpMethod.POST));
+
+        // test 2: explicit entries, bulk remove
+        repo.remove(URL_2, HttpMethod.ALL);
+        assertNull("removed url-2/dest-1", repo.get(URL_2, HttpMethod.GET));
+        assertNull("removed url-2/dest-1", repo.get(URL_2, HttpMethod.POST));
+
+        // test 3: generic entry, specific delete
+        repo.remove(URL_3, HttpMethod.GET);
+        assertNull("removed url-3/generic", repo.get(URL_3, HttpMethod.ALL));
+        assertNull("removed url-3/get",     repo.get(URL_3, HttpMethod.GET));
+        assertSame("left url-3/post",       DEST_2, repo.get(URL_3, HttpMethod.POST));
+        assertSame("left url-3/put",        DEST_2, repo.get(URL_3, HttpMethod.PUT));
+        assertSame("left url-3/delete",     DEST_2, repo.get(URL_3, HttpMethod.DELETE));
     }
 
 

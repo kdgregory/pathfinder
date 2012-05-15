@@ -24,6 +24,7 @@ import com.kdgregory.pathfinder.core.WarMachine;
 import com.kdgregory.pathfinder.core.PathRepo.HttpMethod;
 import com.kdgregory.pathfinder.core.impl.WarMachineImpl;
 import com.kdgregory.pathfinder.servlet.ServletInspector;
+import com.kdgregory.pathfinder.spring.SpringInspector;
 
 
 /**
@@ -36,7 +37,8 @@ public class Main
     {
         WarMachine machine = openWarOrDie(argv);
         PathRepo repo = new PathRepo();
-        applyInspectors(machine, repo, new ServletInspector());
+        applyInspectors(machine, repo, new ServletInspector(),
+                                       new SpringInspector());
         dumpRepo(repo);
     }
 
