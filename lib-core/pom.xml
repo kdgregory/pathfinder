@@ -34,10 +34,15 @@
         </dependency>
 
         <dependency>
+            <!-- GITHUB -->
+            <groupId>com.kdgregory.bcelx</groupId>
+            <artifactId>bcelx</artifactId>
+            <version>${bcelx.version}</version>
+        </dependency>
+        <dependency>
             <groupId>commons-io</groupId>
             <artifactId>commons-io</artifactId>
             <version>${commons.io.version}</version>
-            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>log4j</groupId>

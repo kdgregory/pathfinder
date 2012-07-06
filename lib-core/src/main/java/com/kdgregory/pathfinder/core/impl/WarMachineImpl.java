@@ -21,8 +21,11 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.TreeMap;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.jar.JarInputStream;
@@ -37,6 +40,9 @@ import org.apache.log4j.Logger;
 
 import net.sf.kdgcommons.collections.CollectionUtil;
 import net.sf.kdgcommons.io.IOUtil;
+import net.sf.kdgcommons.lang.ObjectUtil;
+import net.sf.kdgcommons.lang.StringUtil;
+import net.sf.kdgcommons.lang.UnreachableCodeException;
 import net.sf.practicalxml.ParseUtil;
 import net.sf.practicalxml.xpath.XPathWrapperFactory;
 import net.sf.practicalxml.xpath.XPathWrapperFactory.CacheType;
@@ -60,6 +66,7 @@ implements WarMachine
     private JarFile mappedWar;
     private Document webXml;
     private List<ServletMapping> servletMappings;
+    private TreeMap<String,String> filesOnClasspath;
 
     private XPathWrapperFactory xpathFact = new XPathWrapperFactory(CacheType.SIMPLE)
                                             .bindNamespace("j2ee", "http://java.sun.com/xml/ns/j2ee");
@@ -93,6 +100,7 @@ implements WarMachine
             throw new IllegalArgumentException("unable to open: " + mappedWar, ex);
         }
     }
+
 
     private void parseWebXml()
     {
@@ -179,6 +187,40 @@ implements WarMachine
 
 
     @Override
+    public Set<String> getFilesOnClasspath()
+    {
+        lazyBuildClasspath();
+        return Collections.unmodifiableSet(filesOnClasspath.keySet());
+    }
+
+
+    @Override
+    public Set<String> getClassfilesInPackage(String packageName, boolean recurse)
+    {
+        packageName = packageName.replace('.', '/');
+        Set<String> result = new HashSet<String>();
+        lazyBuildClasspath();
+
+        // because the classpath map is sorted, we can efficiently start looking in
+        // the middle, and exit as soon as the condition doesn't apply
+        for (String filename : filesOnClasspath.tailMap(packageName).keySet())
+        {
+            if (!filename.endsWith(".class"))
+                continue;
+
+            String filePackage = StringUtil.extractLeftOfLast(filename, "/");
+            if (!filePackage.startsWith(packageName))
+                break;
+
+            if (filePackage.equals(packageName) || recurse)
+                result.add(filename);
+        }
+
+        return result;
+    }
+
+
+    @Override
     public InputStream openFile(String filename)
     throws IOException
     {
@@ -198,47 +240,34 @@ implements WarMachine
     public InputStream openClasspathFile(String filename)
     throws IOException
     {
-        logger.debug("looking for " + filename + " on classpath");
         if (filename.startsWith("/"))
             filename = filename.substring(1);
 
-        InputStream in = openFile("/WEB-INF/classes/" + filename);
-        if (in != null)
+        lazyBuildClasspath();
+        String location = filesOnClasspath.get(filename);
+        if (location == null)
         {
-            logger.debug("found " + filename + " in WEB-INF/classes");
-            return in;
+            logger.warn("request for non-existent classpath file: " + filename);
+            return null;
         }
 
-        for (String jarFile : getPrivateFiles())
+        if (StringUtil.isEmpty(location))
         {
-            if (!jarFile.startsWith("/WEB-INF/lib") || !jarFile.endsWith(".jar"))
-                continue;
-
-            logger.trace("looking for " + filename + " in " + jarFile);
-            InputStream ii = openFile(jarFile);
-            try
-            {
-                JarInputStream jj = new JarInputStream(ii);
-                ZipEntry entry = null;
-                while ((entry = jj.getNextEntry()) != null)
-                {
-                    if (entry.getName().equals(filename))
-                    {
-                        logger.debug("found " + filename + " in " + jarFile);
-                        return jj;
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                logger.debug("error processing " + jarFile, ex);
-                // fall through to close the file and try the next
-            }
-            IOUtil.closeQuietly(ii);
+            return openFile("/WEB-INF/classes/" + filename);
         }
 
-        logger.debug("unable to find " + filename + " on classpath");
-        return null;
+        InputStream ii = openFile(location);
+        JarInputStream jj = new JarInputStream(ii);
+        ZipEntry entry = null;
+        while ((entry = jj.getNextEntry()) != null)
+        {
+            if (entry.getName().equals(filename))
+            {
+                return jj;
+            }
+        }
+
+        throw new UnreachableCodeException("file was found during classpath scan, but not on retrieval");
     }
 
 
@@ -272,6 +301,71 @@ implements WarMachine
             servletMappings.add(new ServletMappingImpl(mappingUrl, servlet));
         }
         Collections.sort(servletMappings);
+    }
+
+
+    private void lazyBuildClasspath()
+    {
+        if (filesOnClasspath != null)
+            return;
+
+        filesOnClasspath = new TreeMap<String,String>();
+        for (String filename : getPrivateFiles())
+        {
+            if (filename.startsWith("/WEB-INF/classes"))
+            {
+                addFileToClasspath(filename.substring(17), "");
+            }
+            else if (filename.startsWith("/WEB-INF/lib"))
+            {
+                addArchiveToClasspath(filename);
+            }
+        }
+    }
+
+
+    private void addArchiveToClasspath(String filename)
+    {
+        if (!filename.toLowerCase().endsWith(".jar")
+                && filename.toLowerCase().endsWith(".zip"))
+        {
+            logger.warn("found unexpected file in WEB-INF/lib: " + filename);
+            return;
+        }
+
+        InputStream in = null;
+        try
+        {
+            in = openFile(filename);
+            JarInputStream jis = new JarInputStream(in);
+            ZipEntry entry = null;
+            while ((entry = jis.getNextEntry()) != null)
+            {
+                addFileToClasspath(entry.getName(), filename);
+            }
+        }
+        catch (Exception ex)
+        {
+            logger.warn("unable to process archive \"" + filename + "\": " + ex.getMessage());
+        }
+        finally
+        {
+            IOUtil.closeQuietly(in);
+        }
+    }
+
+
+    private void addFileToClasspath(String filename, String srcLoc)
+    {
+        if (filesOnClasspath.containsKey(filename))
+        {
+            String prevLoc = ObjectUtil.defaultValue(filesOnClasspath.get(filename), "/WEB-INF/classes");
+            logger.warn("attempting to add \"" + filename + "\" to classpath"
+                        + " from \"" + srcLoc + "\";"
+                        + " already found in \"" + prevLoc + "\"");
+            return;
+        }
+        filesOnClasspath.put(filename, srcLoc);
     }
 
 

@@ -14,11 +14,15 @@
 
 package com.kdgregory.pathfinder.spring;
 
+import java.io.IOException;
+import java.io.StringReader;
 import java.util.List;
 import java.util.Properties;
 
 import org.w3c.dom.Element;
 
+import net.sf.kdgcommons.lang.StringUtil;
+import net.sf.practicalxml.DomUtil;
 import net.sf.practicalxml.xpath.XPathWrapperFactory;
 
 
@@ -48,6 +52,22 @@ public class BeanDefinition
         beanName = def.getAttribute("id").trim();
         beanClass = def.getAttribute("class").trim();
         beanDef = def;
+    }
+
+
+    /**
+     *  Called for beans defined with annotations; all information must be
+     *  passed in.
+     *
+     *  @param  className   The fully-qualified name of the bean class. The
+     *                      bean's name will be formed from the simple name
+     *                      of the class, with the first letter lowercased.
+     */
+    public BeanDefinition(String className)
+    {
+        beanName = StringUtil.extractRightOfLast(className, ".");
+        beanName = beanName.substring(0, 1).toLowerCase() + beanName.substring(1);
+        beanClass = className;
     }
 
 
@@ -90,7 +110,11 @@ public class BeanDefinition
         if (propDef == null)
             return null;
 
-        return propDef.getAttribute("value");
+        String value = propDef.getAttribute("value");
+        if (StringUtil.isEmpty(value))
+            value = xpfact.newXPath("b:value").evaluateAsString(propDef);
+
+        return value;
     }
 
 
@@ -118,16 +142,19 @@ public class BeanDefinition
         if (propDef == null)
             return null;
 
-        Properties ret = new Properties();
-        List<Element> props = xpfact.newXPath("b:props/b:prop").evaluate(propDef, Element.class);
-        for (Element prop : props)
-        {
-            String propName  = prop.getAttribute("key");
-            String propValue = prop.getTextContent().trim();
-            ret.put(propName, propValue);
-        }
+        Properties ret = tryParsePropertiesFromValue(propDef);
+        if (ret == null)
+            ret = tryParsePropertiesFromProps(propDef);
 
         return ret;
+    }
+
+
+
+    @Override
+    public String toString()
+    {
+        return getClass().getSimpleName() + "[id=" + getBeanName() + ", class=" + getBeanClass() + "]";
     }
 
 
@@ -143,4 +170,43 @@ public class BeanDefinition
         return propDef;
     }
 
+
+    private Properties tryParsePropertiesFromValue(Element propDef)
+    {
+        // single value is what's in the document, so try it first ... note that
+        // we can't use a string eval, because it returns empty if the element
+        // isn't present
+        Element valueElem = xpfact.newXPath("b:value").evaluateAsElement(propDef);
+        if (valueElem == null)
+            return null;
+
+        String value = DomUtil.getText(valueElem).trim();
+        try
+        {
+            Properties ret = new Properties();
+            ret.load(new StringReader(value));
+            return ret;
+        }
+        catch (IOException ex)
+        {
+            // shouldn't happen; we'll let the null bubble up
+            return null;
+        }
+    }
+
+
+    private Properties tryParsePropertiesFromProps(Element propDef)
+    {
+        // FIXME - this will return an empty list if there's no "props" element
+        List<Element> props = xpfact.newXPath("b:props/b:prop").evaluate(propDef, Element.class);
+
+        Properties ret = new Properties();
+        for (Element prop : props)
+        {
+            String propName  = prop.getAttribute("key");
+            String propValue = prop.getTextContent().trim();
+            ret.put(propName, propValue);
+        }
+        return ret;
+    }
 }

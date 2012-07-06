@@ -16,14 +16,17 @@ package com.kdgregory.pathfinder.spring;
 
 import java.util.List;
 import java.util.Properties;
+import java.util.Set;
 
 import org.junit.Test;
+
 import static org.junit.Assert.*;
 
 import org.apache.log4j.Logger;
 
+import com.kdgregory.pathfinder.core.ClasspathScanner;
 import com.kdgregory.pathfinder.core.WarMachine;
-import com.kdgregory.pathfinder.spring.test.WarNames;
+import com.kdgregory.pathfinder.test.WarNames;
 import com.kdgregory.pathfinder.util.TestHelpers;
 
 
@@ -62,7 +65,7 @@ public class TestSpringContext
         logger.info("testGetBeansFromSimpleContextInWar()");
 
         WarMachine war = TestHelpers.createWarMachine(WarNames.SPRING2_SIMPLE);
-        SpringContext context = new SpringContext(war, "classpath:servletContext.xml");
+        SpringContext context = new SpringContext(war, "/WEB-INF/spring/servletContext.xml");
         assertEquals("number of beans defined", 4, context.getBeans().size());
 
         BeanDefinition b1 = context.getBean("simpleUrlMapping");
@@ -80,14 +83,127 @@ public class TestSpringContext
         BeanDefinition bean = context.getBean("example");
         assertNotNull("able to load context", bean);
 
-        assertEquals("extracted property as string", "foo", bean.getPropertyAsString("propAsString"));
+        assertEquals("extracted property as string in attribute", "foo", bean.getPropertyAsString("propAsStringAttribute"));
+        assertEquals("extracted property as string in value", "bar", bean.getPropertyAsString("propAsStringValue"));
 
         assertEquals("extracted property as ref", "example", bean.getPropertyAsRefId("propAsRefId"));
         // FIXME - add test for explicit <ref> element
 
-        Properties propsProp = bean.getPropertyAsProperties("propAsProperties");
-        assertNotNull("able to extract Properties property", propsProp);
-        assertEquals("extracted property for 'foo'",   "bar",    propsProp.get("foo"));
-        assertEquals("extracted property for 'argle'", "bargle", propsProp.get("argle"));
+        Properties propsProp1 = bean.getPropertyAsProperties("propAsSingleValue");
+        assertNotNull("able to extract property with name-value props", propsProp1);
+        assertEquals("extracted property for 'foo'",   "bar",    propsProp1.get("foo"));
+        assertEquals("extracted property for 'argle'", "bargle", propsProp1.get("argle"));
+
+        Properties propsProp2 = bean.getPropertyAsProperties("propAsExplicitProperties");
+        assertNotNull("able to extract property with explicit props", propsProp2);
+        assertEquals("extracted property for 'foo'",   "bar",    propsProp2.get("foo"));
+        assertEquals("extracted property for 'argle'", "bargle", propsProp2.get("argle"));
     }
+
+
+    @Test
+    public void testParentChildContext() throws Exception
+    {
+        SpringContext parent = new SpringContext(null, "classpath:contexts/parentContext.xml");
+        SpringContext child = new SpringContext(parent, null, "classpath:contexts/childContext.xml");
+
+        // the child should be able to retrieve a bean defined in its own XML
+
+        BeanDefinition bean1 = child.getBean("simpleUrlMapping");
+        assertEquals("child bean class", "org.springframework.web.servlet.handler.SimpleUrlHandlerMapping", bean1.getBeanClass());
+
+        // and that it delegates to the parent if it doesn't have a bean
+
+        BeanDefinition bean2 = child.getBean("simpleControllerB");
+        assertEquals("parent bean class", "com.kdgregory.pathfinder.test.spring2.SimpleController", bean2.getBeanClass());
+
+        // the child's bean map should combine both parent and child
+
+        assertEquals("bean count from child, all beans", 4, child.getBeans().size());
+
+        // but the parent's shouldn't
+
+        assertEquals("bean count from parent, all beans", 2, parent.getBeans().size());
+
+        // ditto for class scans
+
+        List<BeanDefinition> list1 = child.getBeansByClass("com.kdgregory.pathfinder.test.spring2.SimpleController");
+        assertEquals("bean count from child, class scan", 2, list1.size());
+        assertTrue("scan from child has controllerA", list1.contains(child.getBean("simpleControllerA")));
+        assertTrue("scan from child has controllerb", list1.contains(child.getBean("simpleControllerB")));
+
+        List<BeanDefinition> list2 = parent.getBeansByClass("com.kdgregory.pathfinder.test.spring2.SimpleController");
+        assertEquals("bean count from parent, class scan", 1, list2.size());
+        assertTrue("scan from parent has controllerb", list2.contains(child.getBean("simpleControllerB")));
+    }
+
+
+    @Test
+    public void testCombinedContext() throws Exception
+    {
+        // there are three ways to combine: comma, semi-colon, or whitespace (any amount)
+        // bean count will be our proxy for reading correctly
+
+        SpringContext ctx1 = new SpringContext(null, "classpath:contexts/combined1.xml,classpath:contexts/combined2.xml");
+        assertEquals("processed all files when separated by comma", 4, ctx1.getBeans().size());
+
+        SpringContext ctx2 = new SpringContext(null, "classpath:contexts/combined1.xml;classpath:contexts/combined2.xml");
+        assertEquals("processed all files when separated by semi-colon", 4, ctx2.getBeans().size());
+
+        SpringContext ctx3 = new SpringContext(null, "classpath:contexts/combined1.xml \t\n classpath:contexts/combined2.xml");
+        assertEquals("processed all files when separated by comma", 4, ctx3.getBeans().size());
+    }
+
+
+    @Test
+    public void testExtractSingleComponentScan() throws Exception
+    {
+        SpringContext ctx = new SpringContext(null, "classpath:contexts/componentScanSingle.xml");
+        List<ClasspathScanner> scanners = ctx.getComponentScans();
+        assertEquals("number of scanner objects", 1, scanners.size());
+
+        ClasspathScanner scanner = scanners.get(0);
+        assertEquals("base package count", 1, scanner.getBasePackages().size());
+        assertEquals("base package config", Boolean.TRUE, scanner.getBasePackages().get("com/example/pkg1"));
+
+        Set<String> annotationFilter = scanner.getIncludedAnnotations();
+        assertEquals("count of filter annotations", 1, annotationFilter.size());
+        assertTrue("annotations filter includes @Controller", annotationFilter.contains("org.springframework.stereotype.Controller"));
+    }
+
+
+    @Test
+    public void testExtractComponentScanWithMultiplePackages() throws Exception
+    {
+        SpringContext ctx = new SpringContext(null, "classpath:contexts/componentScanSingleWithMultiplePackages.xml");
+        List<ClasspathScanner> scanners = ctx.getComponentScans();
+        assertEquals("number of scanner objects", 1, scanners.size());
+
+        ClasspathScanner scanner = scanners.get(0);
+        assertEquals("base package count", 3, scanner.getBasePackages().size());
+        assertEquals("base package config", Boolean.TRUE, scanner.getBasePackages().get("com/example/pkg1"));
+        assertEquals("base package config", Boolean.TRUE, scanner.getBasePackages().get("com/example/pkg2"));
+        assertEquals("base package config", Boolean.TRUE, scanner.getBasePackages().get("com/example/pkg3"));
+    }
+
+
+    @Test
+    public void testExtractMultipleComponentScans() throws Exception
+    {
+        SpringContext ctx = new SpringContext(null, "classpath:contexts/componentScanMultiple.xml");
+        List<ClasspathScanner> scanners = ctx.getComponentScans();
+        assertEquals("number of scanner objects", 2, scanners.size());
+
+        ClasspathScanner scanner1 = scanners.get(0);
+        assertEquals("scanner1 package count", 1, scanner1.getBasePackages().size());
+        assertEquals("scanner1 package config", Boolean.TRUE, scanner1.getBasePackages().get("com/example/pkg1"));
+
+        ClasspathScanner scanner2 = scanners.get(1);
+        assertEquals("scanner2 package count", 3, scanner2.getBasePackages().size());
+        assertEquals("scanner2 package config", Boolean.TRUE, scanner2.getBasePackages().get("com/example/pkg1"));
+        assertEquals("scanner2 package config", Boolean.TRUE, scanner2.getBasePackages().get("com/example/pkg2"));
+        assertEquals("scanner2 package config", Boolean.TRUE, scanner2.getBasePackages().get("com/example/pkg3"));
+    }
+
+
 }

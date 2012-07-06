@@ -17,6 +17,7 @@ package com.kdgregory.pathfinder.core;
 import java.io.File;
 import java.io.InputStream;
 import java.util.List;
+import java.util.Set;
 
 import org.w3c.dom.Document;
 
@@ -30,7 +31,7 @@ import net.sf.practicalxml.DomUtil;
 
 import com.kdgregory.pathfinder.core.WarMachine.ServletMapping;
 import com.kdgregory.pathfinder.core.impl.WarMachineImpl;
-import com.kdgregory.pathfinder.spring.test.WarNames;
+import com.kdgregory.pathfinder.test.WarNames;
 import com.kdgregory.pathfinder.util.TestHelpers;
 
 
@@ -136,6 +137,37 @@ public class TestWarMachine
 
 
     @Test
+    public void testGetFilesOnClasspath() throws Exception
+    {
+        WarMachine machine = TestHelpers.createWarMachine(WarNames.SERVLET);
+
+        Set<String> files = machine.getFilesOnClasspath();
+        assertTrue("searching for file under WEB-INF", files.contains("com/example/servlet/SomeServlet.class"));
+        assertTrue("searching for file in JAR",        files.contains("net/sf/practicalxml/DomUtil.class"));
+    }
+
+
+    @Test
+    public void testGetClassfilesInPackage() throws Exception
+    {
+        WarMachine machine = TestHelpers.createWarMachine(WarNames.SERVLET);
+
+        Set<String> files1 = machine.getClassfilesInPackage("com.example.servlet", false);
+        assertEquals("number of files, in WEB-INF, non-recursive",  1, files1.size());
+        assertTrue("searching for file, in WEB-INF, non-recursive", files1.contains("com/example/servlet/SomeServlet.class"));
+
+        Set<String> files2 = machine.getClassfilesInPackage("net.sf.practicalxml.xpath", false);
+        assertEquals("number of files, in JAR, non-recursive",  13, files2.size());
+        assertTrue("searching for file, in JAR, non-recursive", files2.contains("net/sf/practicalxml/xpath/XPathWrapper.class"));
+
+        Set<String> files3 = machine.getClassfilesInPackage("net.sf.practicalxml.xpath", true);
+        assertEquals("number of files, in JAR, recursive",  17, files3.size());
+        assertTrue("searching for file, in JAR, recursive", files3.contains("net/sf/practicalxml/xpath/XPathWrapper.class"));
+        assertTrue("searching for file, in JAR, recursive", files3.contains("net/sf/practicalxml/xpath/function/Constants.class"));
+    }
+
+
+    @Test
     public void testOpenFile() throws Exception
     {
         WarMachine machine = TestHelpers.createWarMachine(WarNames.SERVLET);
@@ -189,4 +221,5 @@ public class TestWarMachine
         InputStream in3 = machine.openClasspathFile("web.xml");
         assertNull("shouldn't be able to open file not on classpath", in3);
     }
+
 }

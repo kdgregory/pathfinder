@@ -14,8 +14,10 @@
 
 package com.kdgregory.pathfinder.spring;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -28,10 +30,14 @@ import org.xml.sax.InputSource;
 
 import org.apache.log4j.Logger;
 
+import net.sf.kdgcommons.io.IOUtil;
+import net.sf.kdgcommons.lang.StringUtil;
+import net.sf.practicalxml.DomUtil;
 import net.sf.practicalxml.ParseUtil;
 import net.sf.practicalxml.xpath.XPathWrapperFactory;
 import net.sf.practicalxml.xpath.XPathWrapperFactory.CacheType;
 
+import com.kdgregory.pathfinder.core.ClasspathScanner;
 import com.kdgregory.pathfinder.core.WarMachine;
 
 
@@ -44,13 +50,16 @@ public class SpringContext
 
     private XPathWrapperFactory xpfact
             = new XPathWrapperFactory(CacheType.SIMPLE)
-              .bindNamespace("b", "http://www.springframework.org/schema/beans");
+              .bindNamespace("b",   "http://www.springframework.org/schema/beans")
+              .bindNamespace("ctx", "http://www.springframework.org/schema/context");
 
 
 //----------------------------------------------------------------------------
 //  Instance Variables and Constructor
 //----------------------------------------------------------------------------
 
+    private SpringContext parent;
+    private Document dom;
     private Map<String,BeanDefinition> beanDefinitions = new HashMap<String,BeanDefinition>();
 
 
@@ -68,9 +77,21 @@ public class SpringContext
     {
         for (String path : decomposeContextLocation(contextLocation))
         {
-            Document dom = parseContextFile(war, path);
-            extractBeanDefinitions(dom, path);
+            dom = parseContextFile(war, path);
+            processImports(war, path);
+            extractBeanDefinitions(path);
         }
+    }
+
+
+    /**
+     *  Creates an instance that will delegate bean lookups to its parent if
+     *  they are not found locally.
+     */
+    public SpringContext(SpringContext parent, WarMachine war, String contextLocation)
+    {
+        this(war, contextLocation);
+        this.parent = parent;
     }
 
 
@@ -83,7 +104,12 @@ public class SpringContext
      */
     public Map<String,BeanDefinition> getBeans()
     {
-        return Collections.unmodifiableMap(beanDefinitions);
+        if (parent == null)
+            return Collections.unmodifiableMap(beanDefinitions);
+
+        Map<String,BeanDefinition> combined = new HashMap<String,BeanDefinition>();
+        buildBeanMapFromHierarchy(combined);
+        return Collections.unmodifiableMap(combined);
     }
 
 
@@ -93,12 +119,17 @@ public class SpringContext
      */
     public BeanDefinition getBean(String name)
     {
-        return beanDefinitions.get(name);
+        BeanDefinition def = beanDefinitions.get(name);
+        if ((def == null) && (parent != null))
+            def = parent.getBean(name);
+
+        return def;
     }
 
 
     /**
      *  Returns the set of bean names that implement a specified class.
+     *  The caller is free to modify this list.
      */
     public List<BeanDefinition> getBeansByClass(String className)
     {
@@ -108,7 +139,42 @@ public class SpringContext
             if (className.equals(bean.getBeanClass()))
                 beans.add(bean);
         }
+
+        if (parent != null)
+            beans.addAll(parent.getBeansByClass(className));
+
         return beans;
+    }
+
+
+    /**
+     *  Finds all <code>&lt;ctx:component-scan&gt;</code> entries and returns
+     *  scanner objects for each. Looks in the current context only, and restricts
+     *  the scan to classes annotated with <code>@Controller</code>.
+     *  <p>
+     *  FIXME - does not support inclusions or exclusions; will need to return
+     *          a list of scanner objects
+     */
+    public List<ClasspathScanner> getComponentScans()
+    {
+        List<Element> scanDefs = xpfact.newXPath("/b:beans/ctx:component-scan")
+                                 .evaluate(dom, Element.class);
+
+        List<ClasspathScanner> result = new ArrayList<ClasspathScanner>(scanDefs.size());
+        for (Element elem : scanDefs)
+        {
+            ClasspathScanner scanner = new ClasspathScanner()
+                                       .setIncludedAnnotations("org.springframework.stereotype.Controller");
+            String basePackage = elem.getAttribute("base-package");
+            String[] bp2 = basePackage.split(",");
+            for (String pkg : bp2)
+            {
+                scanner.addBasePackage(pkg.trim());
+            }
+            result.add(scanner);
+        }
+
+        return result;
     }
 
 
@@ -116,17 +182,23 @@ public class SpringContext
 //  Internals
 //----------------------------------------------------------------------------
 
+    private void buildBeanMapFromHierarchy(Map<String,BeanDefinition> map)
+    {
+        // note: if both parent and child declares the same beans, it
+        // should be an error; we'll assume that a running WAR won't
+        // have errors of that sort
+
+        map.putAll(beanDefinitions);
+        if (parent != null)
+            parent.buildBeanMapFromHierarchy(map);
+    }
+
+
     private List<String> decomposeContextLocation(String contextLocation)
     {
-        String[] paths = contextLocation.split(",");
-        List<String> result = new ArrayList<String>(paths.length);
-        for (String path : paths)
-        {
-            if (path.startsWith("classpath:"))
-                path = path.substring(10);
-            result.add(path);
-        }
-        return result;
+        String[] paths = contextLocation.split("[,;]|\\s+");
+        // FIXME - support wildcards
+        return Arrays.asList(paths);
     }
 
 
@@ -137,8 +209,7 @@ public class SpringContext
         InputStream in = null;
         try
         {
-            in = (war == null) ? getClass().getClassLoader().getResourceAsStream(file)
-                               : war.openClasspathFile(file);
+            in = openResource(war, file);
             if (in == null)
                 throw new IllegalArgumentException("invalid context location: " + file);
             return ParseUtil.parse(new InputSource(in));
@@ -147,12 +218,73 @@ public class SpringContext
         {
             if (ex instanceof IllegalArgumentException)
                 throw (IllegalArgumentException)ex;
-            throw new IllegalArgumentException("invalid context location: " + file, ex);
+            throw new IllegalArgumentException("unparseable context: " + file, ex);
+        }
+        finally
+        {
+            IOUtil.closeQuietly(in);
         }
     }
 
 
-    private void extractBeanDefinitions(Document dom, String filename)
+    private void processImports(WarMachine war, String origFile)
+    {
+        // < ="services.xml"/>
+        List<Element> importDefs = xpfact.newXPath("/b:beans/b:import")
+                                   .evaluate(dom, Element.class);
+        logger.debug(origFile + " has " + importDefs.size() + " imports");
+        for (Element importDef : importDefs)
+        {
+            String importLoc = importDef.getAttribute("resource");
+            if (StringUtil.isEmpty(importLoc))
+            {
+                logger.warn("missing resource attribute; skipping import");
+                continue;
+            }
+            importLoc = rebaseIncludedResource(origFile, importLoc);
+
+            logger.debug("processing imported file \"" + importLoc + "\" from " + origFile);
+            Document importDom = parseContextFile(war, importLoc);
+            for (Element child : DomUtil.getChildren(importDom.getDocumentElement()))
+            {
+                child = (Element)dom.importNode(child, true);
+                dom.getDocumentElement().appendChild(child);
+            }
+        }
+    }
+
+
+    private String rebaseIncludedResource(String origFile, String includedFile)
+    {
+        // FIXME - I'm not sure if the ":" is valid; could be an absolute Windows path
+        if (includedFile.contains(":") || includedFile.startsWith("/"))
+            return includedFile;
+
+        String origPath = StringUtil.extractLeftOfLast(origFile, "/");
+        if (StringUtil.isEmpty(origPath))
+            return includedFile;
+
+        return origPath + "/" + includedFile;
+    }
+
+
+    private InputStream openResource(WarMachine war, String file)
+    throws IOException
+    {
+        if (file.startsWith("classpath:"))
+        {
+            file = file.substring(10);
+            return (war == null) ? getClass().getClassLoader().getResourceAsStream(file)
+                                 : war.openClasspathFile(file);
+        }
+        else
+        {
+            return war.openFile(file);
+        }
+    }
+
+
+    private void extractBeanDefinitions(String filename)
     {
         List<Element> beans = xpfact.newXPath("/b:beans/b:bean").evaluate(dom, Element.class);
         logger.debug("found " + beans.size() + " bean definitions in " + filename);

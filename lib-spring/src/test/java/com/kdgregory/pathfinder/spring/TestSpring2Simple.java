@@ -24,7 +24,7 @@ import com.kdgregory.pathfinder.core.PathRepo.HttpMethod;
 import com.kdgregory.pathfinder.core.WarMachine;
 import com.kdgregory.pathfinder.servlet.ServletInspector;
 import com.kdgregory.pathfinder.spring.SpringInspector.SpringDestination;
-import com.kdgregory.pathfinder.spring.test.WarNames;
+import com.kdgregory.pathfinder.test.WarNames;
 import com.kdgregory.pathfinder.util.TestHelpers;
 
 
@@ -38,6 +38,7 @@ public class TestSpring2Simple
     private static WarMachine machine;
     private PathRepo pathRepo;
 
+
     @BeforeClass
     public static void loadWar()
     throws Exception
@@ -50,9 +51,10 @@ public class TestSpring2Simple
     public void setUp()
     throws Exception
     {
-        // SpringInspector relies on ServletInspector running first
+        // we run the inspector chain here, assert its actions in the test methods
         pathRepo = new PathRepo();
         new ServletInspector().inspect(machine, pathRepo);
+        new SpringInspector().inspect(machine, pathRepo);
     }
 
 
@@ -63,8 +65,6 @@ public class TestSpring2Simple
     @Test
     public void testDispatcherServletMappingsRemoved() throws Exception
     {
-        new SpringInspector().inspect(machine, pathRepo);
-
         // the original DispatcherServlet mapping should be gone
         assertEquals("/servlet/* removed", 0, pathRepo.get("/servlet/*").size());
 
@@ -76,8 +76,6 @@ public class TestSpring2Simple
     @Test
     public void testSimpleUrlMappings() throws Exception
     {
-        new SpringInspector().inspect(machine, pathRepo);
-
         SpringDestination dest1 = (SpringDestination)pathRepo.get("/servlet/foo.html", HttpMethod.GET);
         assertEquals("simpleControllerA", dest1.getBeanDefinition().getBeanName());
 

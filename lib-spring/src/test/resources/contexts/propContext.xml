@@ -10,13 +10,22 @@
     <!-- a context file that declares a dummy bean with lots of properties -->
 
     <bean id="example" class="com.kdgregory.pathfinder.test.NoSuchBean">
-        <property name="propAsString" value="foo" />
+        <property name="propAsStringAttribute" value="foo" />
+        <property name="propAsStringValue">
+            <value>bar</value>
+        </property>
         <property name="propAsRefId" ref="example" />
-        <property name="propAsProperties">
+        <property name="propAsExplicitProperties">
             <props>
                 <prop key="foo">bar</prop>
                 <prop key="argle">bargle</prop>
             </props>
+        </property>
+        <property name="propAsSingleValue">
+            <value>
+                foo=bar
+                argle=bargle
+            </value>
         </property>
     </bean>
 

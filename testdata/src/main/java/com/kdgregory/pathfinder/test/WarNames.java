@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package com.kdgregory.pathfinder.spring.test;
+package com.kdgregory.pathfinder.test;
 
 
 /**
@@ -21,5 +21,8 @@ package com.kdgregory.pathfinder.spring.test;
 public class WarNames
 {
     public final static String  SERVLET         = "pathfinder-testdata-servlet.war";
+    public final static String  SPRING_SPLIT    = "pathfinder-testdata-spring-split.war";
+    public final static String  SPRING_DEFAULT  = "pathfinder-testdata-spring-default.war";
     public final static String  SPRING2_SIMPLE  = "pathfinder-testdata-spring2-simple.war";
+    public final static String  SPRING3         = "pathfinder-testdata-spring3.war";
 }
