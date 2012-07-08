@@ -103,6 +103,7 @@
             <id>testdata</id>
             <modules>
                 <module>testdata-servlet</module>
+                <module>testdata-servlet25</module>
                 <module>testdata-spring-split</module>
                 <module>testdata-spring-default</module>
                 <module>testdata-spring2-simple</module>

@@ -80,6 +80,16 @@ public class TestWarMachine
 
 
     @Test
+    public void testGetWebXml25() throws Exception
+    {
+        WarMachine machine = TestHelpers.createWarMachine(WarNames.SERVLET_25);
+
+        Document dom = machine.getWebXml();
+        assertEquals("web-app", DomUtil.getLocalName(dom.getDocumentElement()));
+    }
+
+
+    @Test
     public void testGetServletMappings() throws Exception
     {
         WarMachine machine = TestHelpers.createWarMachine(WarNames.SERVLET);

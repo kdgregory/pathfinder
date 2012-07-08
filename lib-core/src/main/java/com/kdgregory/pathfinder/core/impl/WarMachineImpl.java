@@ -43,6 +43,7 @@ import net.sf.kdgcommons.io.IOUtil;
 import net.sf.kdgcommons.lang.ObjectUtil;
 import net.sf.kdgcommons.lang.StringUtil;
 import net.sf.kdgcommons.lang.UnreachableCodeException;
+import net.sf.practicalxml.DomUtil;
 import net.sf.practicalxml.ParseUtil;
 import net.sf.practicalxml.xpath.XPathWrapperFactory;
 import net.sf.practicalxml.xpath.XPathWrapperFactory.CacheType;
@@ -56,6 +57,11 @@ import com.kdgregory.pathfinder.core.WarMachine;
 public class WarMachineImpl
 implements WarMachine
 {
+    // The namespace changed between version 2.4 and 2.5; we'll pick whichever
+    // one applies to current war; may need to add optional code later
+//
+    private final static String NS_SERVLET_24 = "http://java.sun.com/xml/ns/j2ee";
+    private final static String NS_SERVLET_25 = "http://java.sun.com/xml/ns/javaee";
 
 //----------------------------------------------------------------------------
 //  Instance Variables and Constructor
@@ -68,8 +74,7 @@ implements WarMachine
     private List<ServletMapping> servletMappings;
     private TreeMap<String,String> filesOnClasspath;
 
-    private XPathWrapperFactory xpathFact = new XPathWrapperFactory(CacheType.SIMPLE)
-                                            .bindNamespace("j2ee", "http://java.sun.com/xml/ns/j2ee");
+    private XPathWrapperFactory xpathFact;
 
 
     /**
@@ -82,7 +87,7 @@ implements WarMachine
     {
         openFile(warFile);
 
-        // if the file doesn't have web.xml, it's not a war, so failfast
+        // if the file doesn't have web.xml, it's not a war, so fail fast
         parseWebXml();
     }
 
@@ -110,11 +115,38 @@ implements WarMachine
             logger.debug("looking for web.xml");
             JarEntry entry = mappedWar.getJarEntry("WEB-INF/web.xml");
             if (entry == null)
+            {
                 throw new IllegalArgumentException("missing web.xml");
+            }
 
             logger.debug("parsing web.xml");
             entryStream = mappedWar.getInputStream(entry);
             webXml = ParseUtil.parse(new InputSource(entryStream));
+            Element root = webXml.getDocumentElement();
+
+            String rootLocalName = DomUtil.getLocalName(root);
+            if (!rootLocalName.equals("web-app"))
+            {
+                throw new IllegalArgumentException(
+                        "web.xml has invalid root localName: " + rootLocalName);
+            }
+
+            String rootNamespaceUri = root.getNamespaceURI();
+            if (NS_SERVLET_24.equals(rootNamespaceUri))
+            {
+                xpathFact = new XPathWrapperFactory(CacheType.SIMPLE)
+                                .bindNamespace("j2ee", NS_SERVLET_24);
+            }
+            else if (NS_SERVLET_25.equals(rootNamespaceUri))
+            {
+                xpathFact = new XPathWrapperFactory(CacheType.SIMPLE)
+                                .bindNamespace("j2ee", NS_SERVLET_25);
+            }
+            else
+            {
+                throw new IllegalArgumentException(
+                        "web.xml has invalid root namespace: " + rootNamespaceUri);
+            }
         }
         catch (Exception ex)
         {
