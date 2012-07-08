@@ -14,11 +14,8 @@
 
 package com.kdgregory.pathfinder.core;
 
-import java.util.Collections;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.SortedMap;
-import java.util.TreeMap;
 
 
 /**
@@ -32,73 +29,14 @@ import java.util.TreeMap;
  *  <p>
  *  This class is not intended for use by concurrent threads.
  */
-public class PathRepo
-implements Iterable<String>
+public interface PathRepo
+extends Iterable<String>
 {
-    /**
-     *  Everybody needs their own enum for HTTP methods, right? Well, yeah,
-     *  because there isn't one in the JDK. Also because we have an "all"
-     *  method, and a homegrown toString().
-     */
-    public enum HttpMethod
-    {
-        ALL(""),
-        GET("GET"),
-        POST("POST"),
-        PUT("PUT"),
-        DELETE("DELETE");
-
-        private String stringValue;
-
-        HttpMethod(String stringValue)
-        {
-            this.stringValue = stringValue;
-        }
-
-        @Override
-        public String toString()
-        {
-            return stringValue;
-        }
-    }
-
-
-    /**
-     *  The destination of a URL. The various inspectors will provide their
-     *  own implementations, which may contain private functionality.
-     */
-    public interface Destination
-    {
-        /**
-         *  Returns a formatted description of this destination. This will
-         *  be used for final output.
-         */
-        @Override
-        public String toString();
-    }
-
-
-//----------------------------------------------------------------------------
-//  Instance variables and constructor
-//----------------------------------------------------------------------------
-
-    private SortedMap<String,SortedMap<HttpMethod,Destination>> urlMap
-            = new TreeMap<String,SortedMap<HttpMethod,Destination>>();
-
-
-//----------------------------------------------------------------------------
-//  Public methods
-//----------------------------------------------------------------------------
-
     /**
      *  Stores a destination that responds to all request methods. Will replace
      *  all existing destinations for the URL.
      */
-    public void put(String url, Destination dest)
-    {
-        getOrCreateDestMap(url).clear();
-        put(url, HttpMethod.ALL, dest);
-    }
+    public void put(String url, Destination dest);
 
 
     /**
@@ -106,22 +44,13 @@ implements Iterable<String>
      *  there is an existing "all" entry, it will be overridden for just the
      *  method stored.
      */
-    public void put(String url, HttpMethod method, Destination dest)
-    {
-        SortedMap<HttpMethod,Destination> destMap = getOrCreateDestMap(url);
-        destMap.put(method, dest);
-    }
+    public void put(String url, HttpMethod method, Destination dest);
 
 
     /**
      *  Stores a map of destinations, replacing the existing map for that URL.
      */
-    public void put(String url, Map<HttpMethod,Destination> destMap)
-    {
-        SortedMap<HttpMethod,Destination> internal = getOrCreateDestMap(url);
-        internal.clear();
-        internal.putAll(destMap);
-    }
+    public void put(String url, Map<HttpMethod,Destination> destMap);
 
 
     /**
@@ -130,15 +59,7 @@ implements Iterable<String>
      *  the URL has also been stored with a specific method. Returns null if
      *  there's no destination for a URL and method.
      */
-    public Destination get(String url, HttpMethod method)
-    {
-        SortedMap<HttpMethod,Destination> destMap = getOrCreateDestMap(url);
-        Destination dest = destMap.get(method);
-        if (dest != null)
-            return dest;
-
-        return destMap.get(HttpMethod.ALL);
-    }
+    public Destination get(String url, HttpMethod method);
 
 
     /**
@@ -151,10 +72,7 @@ implements Iterable<String>
      *          is responsible for translating this to individual mappings
      *          if desired.
      */
-    public Map<HttpMethod,Destination> get(String url)
-    {
-        return Collections.unmodifiableMap(getOrCreateDestMap(url));
-    }
+    public Map<HttpMethod,Destination> get(String url);
 
 
     /**
@@ -162,29 +80,7 @@ implements Iterable<String>
      *  If the passed method is "ALL", will remove all destinations (even if
      *  they were added individually).
      */
-    public void remove(String url, HttpMethod method)
-    {
-        Map<HttpMethod,Destination> destMap = urlMap.get(url);
-        if (destMap == null)
-            return;
-
-        if (method.equals(HttpMethod.ALL))
-        {
-            destMap.clear();
-            return;
-        }
-
-        if (destMap.containsKey(HttpMethod.ALL))
-        {
-            Destination dest = destMap.remove(HttpMethod.ALL);
-            destMap.put(HttpMethod.GET, dest);
-            destMap.put(HttpMethod.POST, dest);
-            destMap.put(HttpMethod.PUT, dest);
-            destMap.put(HttpMethod.DELETE, dest);
-        }
-
-        destMap.remove(method);
-    }
+    public void remove(String url, HttpMethod method);
 
 
     /**
@@ -192,43 +88,5 @@ implements Iterable<String>
      *  will be sorted in alphanumeric order.
      */
     @Override
-    public Iterator<String> iterator()
-    {
-        return Collections.unmodifiableMap(urlMap).keySet().iterator();
-    }
-
-
-    /**
-     *  Returns a string containing the comma-separated URLs in this repo.
-     */
-    @Override
-    public String toString()
-    {
-        StringBuilder sb = new StringBuilder(64 * urlMap.size());
-        sb.append("[");
-        for (String url : urlMap.keySet())
-        {
-            if (sb.length() > 1)
-                sb.append(",");
-            sb.append(url);
-        }
-        sb.append("]");
-        return sb.toString();
-    }
-
-
-//----------------------------------------------------------------------------
-//  Private methods
-//----------------------------------------------------------------------------
-
-    private SortedMap<HttpMethod,Destination> getOrCreateDestMap(String url)
-    {
-        SortedMap<HttpMethod,Destination> destMap = urlMap.get(url);
-        if (destMap == null)
-        {
-            destMap = new TreeMap<PathRepo.HttpMethod,PathRepo.Destination>();
-            urlMap.put(url, destMap);
-        }
-        return destMap;
-    }
+    public Iterator<String> iterator();
 }

@@ -23,6 +23,7 @@ import org.junit.Test;
 import static org.junit.Assert.*;
 
 import com.kdgregory.bcelx.parser.AnnotationParser;
+import com.kdgregory.pathfinder.core.impl.ClasspathScannerImpl;
 import com.kdgregory.pathfinder.test.WarNames;
 import com.kdgregory.pathfinder.util.TestHelpers;
 
@@ -35,7 +36,7 @@ public class TestClasspathScanner
         // this test is identical to TestWarMachine.testGetFilesOnClasspath()
         WarMachine machine = TestHelpers.createWarMachine(WarNames.SERVLET);
 
-        ClasspathScanner scanner = new ClasspathScanner();
+        ClasspathScannerImpl scanner = new ClasspathScannerImpl();
 
         Set<String> files = scanner.scan(machine);
         assertTrue("searching for file under WEB-INF", files.contains("com/example/servlet/SomeServlet.class"));
@@ -48,8 +49,8 @@ public class TestClasspathScanner
     {
         WarMachine machine = TestHelpers.createWarMachine(WarNames.SERVLET);
 
-        ClasspathScanner scanner = new ClasspathScanner()
-                                   .addBasePackage("com.example", true);
+        ClasspathScannerImpl scanner = new ClasspathScannerImpl()
+                                       .addBasePackage("com.example", true);
 
         Set<String> files = scanner.scan(machine);
         assertEquals("number of files found", 1, files.size());
@@ -62,8 +63,8 @@ public class TestClasspathScanner
     {
         WarMachine machine = TestHelpers.createWarMachine(WarNames.SERVLET);
 
-        ClasspathScanner scanner = new ClasspathScanner()
-                                   .addBasePackage("com.example", false);
+        ClasspathScannerImpl scanner = new ClasspathScannerImpl()
+                                       .addBasePackage("com.example", false);
 
         Set<String> files = scanner.scan(machine);
         assertEquals("number of files found", 0, files.size());
@@ -75,14 +76,14 @@ public class TestClasspathScanner
     {
         WarMachine machine = TestHelpers.createWarMachine(WarNames.SPRING3);
 
-        ClasspathScanner scanner = new ClasspathScanner()
-                                   .addBasePackage("com.kdgregory.pathfinder.test.spring3.pkg1", false)
-                                   .addBasePackage("com.kdgregory.pathfinder.test.spring3.pkg2", false);
+        ClasspathScannerImpl scanner = new ClasspathScannerImpl()
+                                       .addBasePackage("com.kdgregory.pathfinder.test.spring3.pkg1", false)
+                                       .addBasePackage("com.kdgregory.pathfinder.test.spring3.pkg2", false);
 
         Map<String,Boolean> packages = scanner.getBasePackages();
-        assertEquals("packages in scan", 2, scanner.getBasePackages().size());
-        assertEquals("expected pkg1", Boolean.FALSE, scanner.getBasePackages().get("com/kdgregory/pathfinder/test/spring3/pkg1"));
-        assertEquals("expected pkg2", Boolean.FALSE, scanner.getBasePackages().get("com/kdgregory/pathfinder/test/spring3/pkg2"));
+        assertEquals("packages in scan", 2, packages.size());
+        assertEquals("expected pkg1", Boolean.FALSE, packages.get("com/kdgregory/pathfinder/test/spring3/pkg1"));
+        assertEquals("expected pkg2", Boolean.FALSE, packages.get("com/kdgregory/pathfinder/test/spring3/pkg2"));
 
         Set<String> files = scanner.scan(machine);
         assertEquals("number of files found", 3, files.size());
@@ -97,11 +98,11 @@ public class TestClasspathScanner
     {
         WarMachine machine = TestHelpers.createWarMachine(WarNames.SPRING3);
 
-        ClasspathScanner scanner = new ClasspathScanner()
-                                   .addBasePackages(Arrays.asList(
-                                           "com.kdgregory.pathfinder.test.spring3.pkg1",
-                                           "com.kdgregory.pathfinder.test.spring3.pkg2"),
-                                           false);
+        ClasspathScannerImpl scanner = new ClasspathScannerImpl()
+                                           .addBasePackages(Arrays.asList(
+                                               "com.kdgregory.pathfinder.test.spring3.pkg1",
+                                               "com.kdgregory.pathfinder.test.spring3.pkg2"),
+                                               false);
 
         Set<String> files = scanner.scan(machine);
         assertEquals("number of files found", 3, files.size());
@@ -116,9 +117,9 @@ public class TestClasspathScanner
     {
         WarMachine machine = TestHelpers.createWarMachine(WarNames.SPRING3);
 
-        ClasspathScanner scanner = new ClasspathScanner()
-                                   .addBasePackage("com.kdgregory.pathfinder.test.spring3")
-                                   .setIncludedAnnotations("org.springframework.stereotype.Controller");
+        ClasspathScannerImpl scanner = new ClasspathScannerImpl()
+                                       .addBasePackage("com.kdgregory.pathfinder.test.spring3")
+                                       .setIncludedAnnotations("org.springframework.stereotype.Controller");
 
         Set<String> files = scanner.scan(machine);
         assertEquals("number of files found", 2, files.size());
@@ -132,9 +133,9 @@ public class TestClasspathScanner
     {
         WarMachine machine = TestHelpers.createWarMachine(WarNames.SPRING3);
 
-        ClasspathScanner scanner = new ClasspathScanner()
-                                   .addBasePackage("com.kdgregory.pathfinder.test.spring3")
-                                   .setIncludedAnnotations("org.springframework.stereotype.Controller");
+        ClasspathScannerImpl scanner = new ClasspathScannerImpl()
+                                       .addBasePackage("com.kdgregory.pathfinder.test.spring3")
+                                       .setIncludedAnnotations("org.springframework.stereotype.Controller");
 
         Map<String,AnnotationParser> parsedClasses = new HashMap<String,AnnotationParser>();
         scanner.scan(machine, parsedClasses);

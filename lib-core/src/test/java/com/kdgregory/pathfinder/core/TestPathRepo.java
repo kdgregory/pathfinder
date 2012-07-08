@@ -21,8 +21,8 @@ import java.util.Map;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
-import com.kdgregory.pathfinder.core.PathRepo.Destination;
-import com.kdgregory.pathfinder.core.PathRepo.HttpMethod;
+import com.kdgregory.pathfinder.core.impl.PathRepoImpl;
+
 
 
 public class TestPathRepo
@@ -44,7 +44,7 @@ public class TestPathRepo
 //----------------------------------------------------------------------------
 
     private static class MyDestination
-    implements PathRepo.Destination
+    implements Destination
     {
         // nothing here
     }
@@ -67,7 +67,7 @@ public class TestPathRepo
     @Test
     public void testPutAndGetWithExplicitMethod() throws Exception
     {
-        PathRepo repo = new PathRepo();
+        PathRepoImpl repo = new PathRepoImpl();
 
         repo.put(URL_1, HttpMethod.GET, DEST_1);
         assertSame("can retrive", DEST_1, repo.get(URL_1, HttpMethod.GET));
@@ -94,7 +94,7 @@ public class TestPathRepo
     @Test
     public void testPutAndGetAll() throws Exception
     {
-        PathRepo repo = new PathRepo();
+        PathRepoImpl repo = new PathRepoImpl();
 
         repo.put(URL_1, DEST_1);
 
@@ -109,7 +109,7 @@ public class TestPathRepo
     @Test
     public void testPutExplicitOverridesAll() throws Exception
     {
-        PathRepo repo = new PathRepo();
+        PathRepoImpl repo = new PathRepoImpl();
 
         repo.put(URL_1, DEST_1);
         repo.put(URL_1, HttpMethod.GET, DEST_2);
@@ -125,7 +125,7 @@ public class TestPathRepo
     @Test
     public void testPutAllOverridesExplicit() throws Exception
     {
-        PathRepo repo = new PathRepo();
+        PathRepoImpl repo = new PathRepoImpl();
 
         repo.put(URL_1, HttpMethod.GET, DEST_2);
         repo.put(URL_1, DEST_1);
@@ -141,7 +141,7 @@ public class TestPathRepo
     @Test
     public void testGetDestinationMap() throws Exception
     {
-        PathRepo repo = new PathRepo();
+        PathRepoImpl repo = new PathRepoImpl();
         repo.put(URL_1, DEST_1);
         repo.put(URL_1, HttpMethod.GET, DEST_2);
 
@@ -158,11 +158,11 @@ public class TestPathRepo
     @Test
     public void testPutDestinationMap() throws Exception
     {
-        PathRepo repo = new PathRepo();
+        PathRepoImpl repo = new PathRepoImpl();
         repo.put(URL_1, DEST_2);
         repo.put(URL_1, HttpMethod.GET, DEST_1);
 
-        Map<HttpMethod,Destination> destMap = new HashMap<PathRepo.HttpMethod,PathRepo.Destination>();
+        Map<HttpMethod,Destination> destMap = new HashMap<HttpMethod,Destination>();
         destMap.put(HttpMethod.GET, DEST_2);
         destMap.put(HttpMethod.POST, DEST_1);
 
@@ -179,9 +179,9 @@ public class TestPathRepo
     @Test
     public void testPutDestinationMapMakesCopy() throws Exception
     {
-        PathRepo repo = new PathRepo();
+        PathRepoImpl repo = new PathRepoImpl();
 
-        Map<HttpMethod,Destination> destMap = new HashMap<PathRepo.HttpMethod,PathRepo.Destination>();
+        Map<HttpMethod,Destination> destMap = new HashMap<HttpMethod,Destination>();
         destMap.put(HttpMethod.GET, DEST_1);
 
         repo.put(URL_1, destMap);
@@ -205,7 +205,7 @@ public class TestPathRepo
     @Test
     public void testRemove() throws Exception
     {
-        PathRepo repo = new PathRepo();
+        PathRepoImpl repo = new PathRepoImpl();
         repo.put(URL_1, HttpMethod.GET, DEST_1);
         repo.put(URL_1, HttpMethod.POST, DEST_2);
         repo.put(URL_2, HttpMethod.GET, DEST_1);
@@ -239,7 +239,7 @@ public class TestPathRepo
     @Test
     public void testIterator() throws Exception
     {
-        PathRepo repo = new PathRepo();
+        PathRepoImpl repo = new PathRepoImpl();
         repo.put(URL_1, DEST_1);
         repo.put(URL_2, HttpMethod.GET, DEST_1);
         repo.put(URL_3, HttpMethod.POST, DEST_1);

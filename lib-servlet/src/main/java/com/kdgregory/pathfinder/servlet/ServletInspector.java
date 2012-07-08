@@ -16,9 +16,9 @@ package com.kdgregory.pathfinder.servlet;
 
 import org.apache.log4j.Logger;
 
+import com.kdgregory.pathfinder.core.Destination;
 import com.kdgregory.pathfinder.core.Inspector;
 import com.kdgregory.pathfinder.core.PathRepo;
-import com.kdgregory.pathfinder.core.PathRepo.Destination;
 import com.kdgregory.pathfinder.core.WarMachine;
 import com.kdgregory.pathfinder.core.WarMachine.ServletMapping;
 

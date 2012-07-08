@@ -26,6 +26,7 @@ import org.apache.log4j.Logger;
 
 import com.kdgregory.pathfinder.core.ClasspathScanner;
 import com.kdgregory.pathfinder.core.WarMachine;
+import com.kdgregory.pathfinder.core.impl.ClasspathScannerImpl;
 import com.kdgregory.pathfinder.test.WarNames;
 import com.kdgregory.pathfinder.util.TestHelpers;
 
@@ -162,7 +163,7 @@ public class TestSpringContext
         List<ClasspathScanner> scanners = ctx.getComponentScans();
         assertEquals("number of scanner objects", 1, scanners.size());
 
-        ClasspathScanner scanner = scanners.get(0);
+        ClasspathScannerImpl scanner = (ClasspathScannerImpl)scanners.get(0);
         assertEquals("base package count", 1, scanner.getBasePackages().size());
         assertEquals("base package config", Boolean.TRUE, scanner.getBasePackages().get("com/example/pkg1"));
 
@@ -179,7 +180,7 @@ public class TestSpringContext
         List<ClasspathScanner> scanners = ctx.getComponentScans();
         assertEquals("number of scanner objects", 1, scanners.size());
 
-        ClasspathScanner scanner = scanners.get(0);
+        ClasspathScannerImpl scanner = (ClasspathScannerImpl)scanners.get(0);
         assertEquals("base package count", 3, scanner.getBasePackages().size());
         assertEquals("base package config", Boolean.TRUE, scanner.getBasePackages().get("com/example/pkg1"));
         assertEquals("base package config", Boolean.TRUE, scanner.getBasePackages().get("com/example/pkg2"));
@@ -194,11 +195,11 @@ public class TestSpringContext
         List<ClasspathScanner> scanners = ctx.getComponentScans();
         assertEquals("number of scanner objects", 2, scanners.size());
 
-        ClasspathScanner scanner1 = scanners.get(0);
+        ClasspathScannerImpl scanner1 = (ClasspathScannerImpl)scanners.get(0);
         assertEquals("scanner1 package count", 1, scanner1.getBasePackages().size());
         assertEquals("scanner1 package config", Boolean.TRUE, scanner1.getBasePackages().get("com/example/pkg1"));
 
-        ClasspathScanner scanner2 = scanners.get(1);
+        ClasspathScannerImpl scanner2 = (ClasspathScannerImpl)scanners.get(1);
         assertEquals("scanner2 package count", 3, scanner2.getBasePackages().size());
         assertEquals("scanner2 package config", Boolean.TRUE, scanner2.getBasePackages().get("com/example/pkg1"));
         assertEquals("scanner2 package config", Boolean.TRUE, scanner2.getBasePackages().get("com/example/pkg2"));

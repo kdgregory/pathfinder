@@ -17,11 +17,12 @@ package com.kdgregory.pathfinder;
 import java.io.File;
 import java.util.Map;
 
+import com.kdgregory.pathfinder.core.Destination;
+import com.kdgregory.pathfinder.core.HttpMethod;
 import com.kdgregory.pathfinder.core.Inspector;
 import com.kdgregory.pathfinder.core.PathRepo;
-import com.kdgregory.pathfinder.core.PathRepo.Destination;
 import com.kdgregory.pathfinder.core.WarMachine;
-import com.kdgregory.pathfinder.core.PathRepo.HttpMethod;
+import com.kdgregory.pathfinder.core.impl.PathRepoImpl;
 import com.kdgregory.pathfinder.core.impl.WarMachineImpl;
 import com.kdgregory.pathfinder.servlet.ServletInspector;
 import com.kdgregory.pathfinder.spring.SpringInspector;
@@ -36,7 +37,7 @@ public class Main
     throws Exception
     {
         WarMachine machine = openWarOrDie(argv);
-        PathRepo repo = new PathRepo();
+        PathRepo repo = new PathRepoImpl();
         applyInspectors(machine, repo, new ServletInspector(),
                                        new SpringInspector());
         dumpRepo(repo);

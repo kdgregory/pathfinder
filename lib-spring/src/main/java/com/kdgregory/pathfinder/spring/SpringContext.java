@@ -39,6 +39,7 @@ import net.sf.practicalxml.xpath.XPathWrapperFactory.CacheType;
 
 import com.kdgregory.pathfinder.core.ClasspathScanner;
 import com.kdgregory.pathfinder.core.WarMachine;
+import com.kdgregory.pathfinder.core.impl.ClasspathScannerImpl;
 
 
 /**
@@ -163,7 +164,7 @@ public class SpringContext
         List<ClasspathScanner> result = new ArrayList<ClasspathScanner>(scanDefs.size());
         for (Element elem : scanDefs)
         {
-            ClasspathScanner scanner = new ClasspathScanner()
+            ClasspathScanner scanner = new ClasspathScannerImpl()
                                        .setIncludedAnnotations("org.springframework.stereotype.Controller");
             String basePackage = elem.getAttribute("base-package");
             String[] bp2 = basePackage.split(",");
