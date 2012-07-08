@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package com.kdgregory.pathfinder.test.spring3.pkg2;
+package com.kdgregory.pathfinder.test.spring3;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -22,29 +22,14 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.servlet.ModelAndView;
 
 
 @Controller
-@RequestMapping("/B")
-public class ControllerB
+public class ControllerA
 {
-    @RequestMapping(value="/bar.html", method=RequestMethod.GET)
-    protected ModelAndView getBar(
-            HttpServletRequest request,
-            HttpServletResponse response)
-    throws Exception
-    {
-        Map<String,String> model = new HashMap<String,String>();
-        model.put("reqUrl", request.getRequestURI());
-        model.put("controller", getClass().getName());
-        return new ModelAndView("simple", "data", model);
-    }
-    
-    
-    @RequestMapping(value="/baz.html", method=RequestMethod.POST)
-    protected ModelAndView getBaz(
+    @RequestMapping(value="/foo.html")
+    protected ModelAndView getFoo(
             HttpServletRequest request,
             HttpServletResponse response)
     throws Exception

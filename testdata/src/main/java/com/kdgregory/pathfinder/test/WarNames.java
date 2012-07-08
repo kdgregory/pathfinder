@@ -25,5 +25,6 @@ public class WarNames
     public final static String  SPRING_SPLIT    = "pathfinder-testdata-spring-split.war";
     public final static String  SPRING_DEFAULT  = "pathfinder-testdata-spring-default.war";
     public final static String  SPRING2_SIMPLE  = "pathfinder-testdata-spring2-simple.war";
-    public final static String  SPRING3         = "pathfinder-testdata-spring3.war";
+    public final static String  SPRING3_BASIC   = "pathfinder-testdata-spring3-basic.war";
+    public final static String  SPRING3_ROOT    = "pathfinder-testdata-spring3-root.war";
 }

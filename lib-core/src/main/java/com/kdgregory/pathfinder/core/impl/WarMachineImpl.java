@@ -373,6 +373,9 @@ implements WarMachine
             ZipEntry entry = null;
             while ((entry = jis.getNextEntry()) != null)
             {
+                String name = entry.getName();
+                if (name.endsWith("/"))
+                    continue;
                 addFileToClasspath(entry.getName(), filename);
             }
         }
@@ -391,6 +394,11 @@ implements WarMachine
     {
         if (filesOnClasspath.containsKey(filename))
         {
+            // lots of JARs will have the same contents in META-INF; we'll assume
+            // that there's nothing important there, because it wouldn't run
+            if (filename.startsWith("META-INF"))
+                return;
+
             String prevLoc = ObjectUtil.defaultValue(filesOnClasspath.get(filename), "/WEB-INF/classes");
             logger.warn("attempting to add \"" + filename + "\" to classpath"
                         + " from \"" + srcLoc + "\";"

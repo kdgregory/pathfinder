@@ -107,7 +107,8 @@
                 <module>testdata-spring-split</module>
                 <module>testdata-spring-default</module>
                 <module>testdata-spring2-simple</module>
-                <module>testdata-spring3</module>
+                <module>testdata-spring3-basic</module>
+                <module>testdata-spring3-root</module>
                 <module>testdata</module>
             </modules>
         </profile>

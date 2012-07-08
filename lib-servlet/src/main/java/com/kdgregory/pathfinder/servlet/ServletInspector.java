@@ -16,7 +16,6 @@ package com.kdgregory.pathfinder.servlet;
 
 import org.apache.log4j.Logger;
 
-import com.kdgregory.pathfinder.core.Destination;
 import com.kdgregory.pathfinder.core.Inspector;
 import com.kdgregory.pathfinder.core.PathRepo;
 import com.kdgregory.pathfinder.core.WarMachine;
@@ -39,64 +38,6 @@ implements Inspector
         addServlets(war, paths);
         addJSPandHTML(war, paths);
         logger.info("ServletInspector finished");
-    }
-
-
-//----------------------------------------------------------------------------
-//  The Destinations that we support
-//----------------------------------------------------------------------------
-
-    private static class ServletDestination
-    implements Destination
-    {
-        private String servletClass;
-
-        public ServletDestination(String servletClass)
-        {
-            this.servletClass = servletClass;
-        }
-
-        @Override
-        public String toString()
-        {
-            return servletClass;
-        }
-    }
-
-
-    private static class JspDestination
-    implements Destination
-    {
-        private String filename;
-
-        public JspDestination(String filename)
-        {
-            this.filename = filename;
-        }
-
-        @Override
-        public String toString()
-        {
-            return filename;
-        }
-    }
-
-
-    private static class HtmlDestination
-    implements Destination
-    {
-        private String filename;
-
-        public HtmlDestination(String filename)
-        {
-            this.filename = filename;
-        }
-
-        @Override
-        public String toString()
-        {
-            return filename;
-        }
     }
 
 
