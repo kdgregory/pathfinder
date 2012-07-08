@@ -39,7 +39,7 @@ Replacing WARFILE with the Spring3 test WAR, you'll see something like the follo
     /servlet/B/baz.html            POST     com.kdgregory.pathfinder.test.spring3.pkg2.ControllerB
     /servlet/foo.html                       com.kdgregory.pathfinder.test.spring3.pkg1.ControllerA
 
-If you want to be overwhelmed with output, take the `log4j.properties` file from any `src/test/resources` directory and put it in `pathfinder/src/main/resources`.
+If you want to be overwhelmed with output, edit the `pathfinder/src/main/resources/log4j.properties` to select something other than the "null" appender.
 
 
 Developing
