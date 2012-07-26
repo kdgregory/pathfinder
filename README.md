@@ -9,8 +9,8 @@ Pathfinder is built using [Maven](http://maven.apache.org/). This means that you
 
 Well, almost. There are three dependencies on other projects that I also maintain, and it's possible that you'll have to build these dependencies before you can build Pathfinder.
 
-* [Practical XML])(http://sourceforge.net/projects/practicalxml/develop): this is available on Maven Central, and doesn't change too often, so chances are good you don't need to download it.
-* [KDG Commons])(http://sourceforge.net/projects/kdgcommons/develop): this is also available on Maven Central, but is being actively modified. Grep the Pathfinder master POM for snapshot versions, or just cross your fingers and build.
+* [Practical XML](http://sourceforge.net/projects/practicalxml/develop): this is available on Maven Central, and doesn't change too often, so chances are good you don't need to download it.
+* [KDG Commons](http://sourceforge.net/projects/kdgcommons/develop): this is also available on Maven Central, but is being actively modified. Grep the Pathfinder master POM for snapshot versions, or just cross your fingers and build.
 * [BCELX](https://github.com/kdgregory/bcelx): still in active development (it's driven by the needs of Pathfinder), so you'll have to download and build. If Git Submodules were a little smarter, it would be automatic.
 
 The first time that you build (or after any major update), you'll have to build the test WARs along with the main project:
