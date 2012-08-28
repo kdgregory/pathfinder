@@ -124,6 +124,21 @@
     </licenses>
 
 
+    <repositories>
+        <repository>
+            <!-- this repository holds BCELX and snapshots of PracticalXML and KDGCommons -->
+            <id>sonatype-nexus-snapshots</id>
+            <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+            <releases>
+                <enabled>false</enabled>
+            </releases>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+        </repository>
+    </repositories>
+
+
     <!-- wouldn't it be nice if Maven took this section from the settings? -->
     <distributionManagement>
         <repository>
