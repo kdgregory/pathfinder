@@ -14,6 +14,8 @@
 
 package com.kdgregory.pathfinder.spring;
 
+import java.util.Map;
+
 import org.junit.Test;
 import static org.junit.Assert.*;
 
@@ -22,6 +24,7 @@ import com.kdgregory.pathfinder.core.PathRepo;
 import com.kdgregory.pathfinder.core.WarMachine;
 import com.kdgregory.pathfinder.core.impl.PathRepoImpl;
 import com.kdgregory.pathfinder.servlet.ServletInspector;
+import com.kdgregory.pathfinder.spring.SpringDestination.RequestParameter;
 import com.kdgregory.pathfinder.test.WarNames;
 import com.kdgregory.pathfinder.util.TestHelpers;
 
@@ -66,6 +69,7 @@ public class TestSpring3
         assertEquals("bean",    "controllerA", dest1.getBeanDefinition().getBeanName());
         assertEquals("class",   "com.kdgregory.pathfinder.test.spring3.pkg1.ControllerA", dest1.getClassName());
         assertEquals("method",  "getFoo", dest1.getMethodName());
+        assertEquals("toString","com.kdgregory.pathfinder.test.spring3.pkg1.ControllerA.getFoo()", dest1.toString());
     }
 
 
@@ -79,12 +83,14 @@ public class TestSpring3
         assertEquals("GET bean",    "controllerB", dest1.getBeanDefinition().getBeanName());
         assertEquals("GET class",   "com.kdgregory.pathfinder.test.spring3.pkg2.ControllerB", dest1.getClassName());
         assertEquals("GET method",  "getBar", dest1.getMethodName());
+        assertEquals("toString","com.kdgregory.pathfinder.test.spring3.pkg2.ControllerB.getBar()", dest1.toString());
 
         SpringDestination dest2 = (SpringDestination)pathRepo.get("/servlet/B/baz.html", HttpMethod.POST);
         assertNotNull("POST mapping exists", dest2);
         assertEquals("POST bean",   "controllerB", dest2.getBeanDefinition().getBeanName());
         assertEquals("POST class",  "com.kdgregory.pathfinder.test.spring3.pkg2.ControllerB", dest2.getClassName());
         assertEquals("POST method", "setBaz", dest2.getMethodName());
+        assertEquals("toString","com.kdgregory.pathfinder.test.spring3.pkg2.ControllerB.setBaz()", dest2.toString());
     }
 
 
@@ -98,6 +104,7 @@ public class TestSpring3
         assertEquals("bean",    "controllerC", dest1.getBeanDefinition().getBeanName());
         assertEquals("class",   "com.kdgregory.pathfinder.test.spring3.pkg2.ControllerC", dest1.getClassName());
         assertEquals("method",  "getC", dest1.getMethodName());
+        assertEquals("toString","com.kdgregory.pathfinder.test.spring3.pkg2.ControllerC.getC()", dest1.toString());
     }
 
 
@@ -170,5 +177,31 @@ public class TestSpring3
         SpringDestination dest4 = (SpringDestination)pathRepo.get("/servlet/C", HttpMethod.GET);
         assertNotNull("class-only mapping exists", dest3);
         assertEquals("class-only bean", "controllerC", dest4.getBeanDefinition().getBeanName());
+    }
+
+
+    @Test
+    public void testRequestParameters() throws Exception
+    {
+        processWar(WarNames.SPRING3_BASIC);
+
+        SpringDestination dest = (SpringDestination)pathRepo.get("/servlet/foo.html", HttpMethod.GET);
+        Map<String,RequestParameter> params = dest.getParams();
+        assertEquals("#/params", 3, params.size());
+        
+        assertEquals("param name: argle",   "argle",             params.get("argle").getName());
+        assertEquals("param type: argle",   "java.lang.String",  params.get("argle").getType());
+        assertEquals("default val: argle",  "",                  params.get("argle").getDefaultValue());
+        assertTrue("required: argle",                            params.get("argle").isRequired());
+        
+        assertEquals("param name: bargle",  "bargle",            params.get("bargle").getName());
+        assertEquals("param type: bargle",  "java.lang.Integer", params.get("bargle").getType());
+        assertEquals("default val: bargle", "12",                params.get("bargle").getDefaultValue());
+        assertFalse("required: bargle",                          params.get("bargle").isRequired());
+        
+        assertEquals("param name: wargle",  "wargle",            params.get("wargle").getName());
+        assertEquals("paramtype : wargle",  "int",               params.get("wargle").getType());
+        assertEquals("default val: wargle", "",                  params.get("wargle").getDefaultValue());
+        assertFalse("required: wargle",                          params.get("wargle").isRequired());
     }
 }

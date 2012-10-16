@@ -26,6 +26,7 @@ import com.kdgregory.pathfinder.core.impl.PathRepoImpl;
 import com.kdgregory.pathfinder.core.impl.WarMachineImpl;
 import com.kdgregory.pathfinder.servlet.ServletInspector;
 import com.kdgregory.pathfinder.spring.SpringInspector;
+import com.kdgregory.pathfinder.util.InvocationOptions;
 
 
 /**
@@ -36,11 +37,13 @@ public class Main
     public static void main(String[] argv)
     throws Exception
     {
-        WarMachine machine = openWarOrDie(argv);
+        Map<InvocationOptions, Boolean> options = InvocationOptions.parseCli(argv);
+
+        WarMachine machine = openWarOrDie(InvocationOptions.removeInvocationArguments(argv));
         PathRepo repo = new PathRepoImpl();
         applyInspectors(machine, repo, new ServletInspector(),
                                        new SpringInspector());
-        dumpRepo(repo);
+        dumpRepo(repo, options);
     }
 
 
@@ -76,7 +79,7 @@ public class Main
     }
 
 
-    private static void dumpRepo(PathRepo repo)
+    private static void dumpRepo(PathRepo repo, Map<InvocationOptions, Boolean> options)
     {
         for (String url : repo)
         {
@@ -84,8 +87,8 @@ public class Main
             for (HttpMethod method : destMap.keySet())
             {
                 Destination dest = destMap.get(method);
-                System.out.println(String.format("%-30s %-8s %s",
-                                                 url, method, dest));
+                System.out.println(
+                        String.format("%-30s %-8s %s", url, method, dest.toString(options)));
             }
         }
     }

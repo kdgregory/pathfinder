@@ -1,5 +1,9 @@
 package com.kdgregory.pathfinder.core;
 
+import java.util.Map;
+
+import com.kdgregory.pathfinder.util.InvocationOptions;
+
 /**
  *  The destination of a URL. The various inspectors will provide their
  *  own implementations, which may contain private functionality.
@@ -7,9 +11,8 @@ package com.kdgregory.pathfinder.core;
 public interface Destination
 {
     /**
-     *  Returns a formatted description of this destination. This will
-     *  be used for final output.
+     *  Returns a formatted description of this destination, taking into
+     *  consideration the specified invocation options.
      */
-    @Override
-    public String toString();
+    public String toString(Map<InvocationOptions, Boolean> options);
 }

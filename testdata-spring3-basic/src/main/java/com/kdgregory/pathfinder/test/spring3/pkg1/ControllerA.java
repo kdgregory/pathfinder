@@ -22,6 +22,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.ModelAndView;
 
 
@@ -31,7 +32,10 @@ public class ControllerA
     @RequestMapping(value="/foo.html")
     protected ModelAndView getFoo(
             HttpServletRequest request,
-            HttpServletResponse response)
+            HttpServletResponse response,
+            @RequestParam(value="argle",  required=true)                     String argle,
+            @RequestParam(value="bargle", required=false, defaultValue="12") Integer bargle,
+            @RequestParam(value="wargle", required=false)                    int wargle) 
     throws Exception
     {
         Map<String,String> model = new HashMap<String,String>();

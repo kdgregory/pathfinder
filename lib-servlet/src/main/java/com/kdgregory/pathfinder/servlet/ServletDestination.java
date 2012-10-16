@@ -14,7 +14,10 @@
 
 package com.kdgregory.pathfinder.servlet;
 
+import java.util.Map;
+
 import com.kdgregory.pathfinder.core.Destination;
+import com.kdgregory.pathfinder.util.InvocationOptions;
 
 class ServletDestination
 implements Destination
@@ -30,5 +33,12 @@ implements Destination
     public String toString()
     {
         return servletClass;
+    }
+
+    @Override
+    public String toString(Map<InvocationOptions,Boolean> options)
+    {
+        // no options (currently) apply
+        return toString();
     }
 }

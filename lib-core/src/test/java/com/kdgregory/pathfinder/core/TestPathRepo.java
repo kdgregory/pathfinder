@@ -22,6 +22,7 @@ import org.junit.Test;
 import static org.junit.Assert.*;
 
 import com.kdgregory.pathfinder.core.impl.PathRepoImpl;
+import com.kdgregory.pathfinder.util.InvocationOptions;
 
 
 
@@ -46,7 +47,11 @@ public class TestPathRepo
     private static class MyDestination
     implements Destination
     {
-        // nothing here
+        @Override
+        public String toString(Map<InvocationOptions,Boolean> options)
+        {
+            throw new UnsupportedOperationException("we don't test output here");
+        }
     }
 
 //----------------------------------------------------------------------------

@@ -25,9 +25,11 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 
 import org.apache.bcel.classfile.Method;
+import org.apache.bcel.generic.Type;
 import org.apache.log4j.Logger;
 
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import net.sf.kdgcommons.lang.StringUtil;
 import net.sf.practicalxml.xpath.XPathWrapperFactory;
@@ -42,6 +44,7 @@ import com.kdgregory.pathfinder.core.Inspector;
 import com.kdgregory.pathfinder.core.PathRepo;
 import com.kdgregory.pathfinder.core.WarMachine;
 import com.kdgregory.pathfinder.core.WarMachine.ServletMapping;
+import com.kdgregory.pathfinder.spring.SpringDestination.RequestParameter;
 
 
 /**
@@ -223,15 +226,42 @@ implements Inspector
             String className, Method method, AnnotationParser ap, 
             WarMachine war, SpringContext context, String urlPrefix, PathRepo paths)
     {
+        Map<String,RequestParameter> requestParams = processParameterAnnotations(method, ap);
+        
         String methodName = method.getName();
         Annotation anno = ap.getMethodAnnotation(method, "org.springframework.web.bind.annotation.RequestMapping");
         for (String methodUrl : getMappingUrls(urlPrefix, anno))
         {
             for (HttpMethod reqMethod : getRequestMethods(anno))
             {
-                paths.put(methodUrl, reqMethod, new SpringDestination(className, methodName));
+                paths.put(methodUrl, reqMethod, new SpringDestination(className, methodName, requestParams));
             }
         }
+    }
+    
+    
+    private Map<String,RequestParameter> processParameterAnnotations(Method method, AnnotationParser ap)
+    {
+        Map<String,RequestParameter> result = new TreeMap<String,RequestParameter>();
+        Type[] methodParams = method.getArgumentTypes();
+        for (int parmIdx = 0 ; parmIdx < methodParams.length ; parmIdx++)
+        {
+            Annotation paramAnno = ap.getParameterAnnotation(method, parmIdx, RequestParam.class.getName());
+            if (paramAnno == null)
+                continue;
+            
+            String name = paramAnno.getValue().asScalar().toString();
+            String type = methodParams[parmIdx].toString();
+            String dflt = (paramAnno.getParam("defaultValue") != null)
+                        ? paramAnno.getParam("defaultValue").asScalar().toString()
+                        : "";
+            int req0    = (paramAnno.getParam("required") != null)
+                        ? ((Integer)paramAnno.getParam("required").asScalar()).intValue()
+                        : 0;
+            boolean req = (req0 != 0) ? true : false;
+            result.put(name, new RequestParameter(name, type, dflt, req));
+        }
+        return result;
     }
 
 
