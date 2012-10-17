@@ -22,6 +22,8 @@ import java.util.Set;
 
 import org.w3c.dom.Document;
 
+import net.sf.practicalxml.xpath.XPathWrapper;
+
 
 /**
  *  Extracts information from the WAR, for use by {@link Inspector}s.
@@ -36,8 +38,20 @@ public interface WarMachine
      *  Returns the <code>web.xml</code> as a parsed XML DOM. Implementations
      *  may return a shared, modifiable instance of the DOM; callers must not
      *  modify the returned object.
+     *  <p>
+     *  Note: the method {@link getWebXmlPath} should be used to retrieve data
+     *  from this DOM.
      */
     public Document getWebXml();
+
+
+    /**
+     *  Returns an XPath that may be used to retrieve content from this WAR's
+     *  <code>web.xml</code>. Elements within the file must be prefixed with
+     *  the "j2ee" namespace prefix; the actual namespace will depend on the
+     *  version of the servlet spec in use.
+     */
+    public XPathWrapper getWebXmlPath(String path);
 
 
     /**

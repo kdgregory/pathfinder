@@ -30,7 +30,7 @@ extends AbstractController
     @Override
     protected ModelAndView handleRequestInternal(
             HttpServletRequest request,
-            HttpServletResponse response) 
+            HttpServletResponse response)
     throws Exception
     {
         Map<String,String> model = new HashMap<String,String>();

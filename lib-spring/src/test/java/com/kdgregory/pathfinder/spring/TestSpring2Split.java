@@ -66,11 +66,11 @@ public class TestSpring2Split
     {
         // this one is defined in the servlet context
         SpringDestination dest1 = (SpringDestination)pathRepo.get("/servlet/foo.html", HttpMethod.GET);
-        assertEquals("simpleControllerA", dest1.getBeanDefinition().getBeanName());
+        assertEquals("simpleControllerA", dest1.getBeanName());
 
         // and this one is defined in the root context
         SpringDestination dest2 = (SpringDestination)pathRepo.get("/servlet/baz.html", HttpMethod.GET);
-        assertEquals("simpleControllerC", dest2.getBeanDefinition().getBeanName());
+        assertEquals("simpleControllerC", dest2.getBeanName());
 
     }
 
@@ -80,10 +80,10 @@ public class TestSpring2Split
     {
         // this one is defined in the servlet context
         SpringDestination dest1 = (SpringDestination)pathRepo.get("/servlet/foo.html", HttpMethod.GET);
-        assertEquals("simpleControllerA", dest1.getBeanDefinition().getBeanName());
+        assertEquals("simpleControllerA", dest1.getBeanName());
 
         // and this one is defined in the imported context
         SpringDestination dest2 = (SpringDestination)pathRepo.get("/servlet/bar.html", HttpMethod.GET);
-        assertEquals("simpleControllerB", dest2.getBeanDefinition().getBeanName());
+        assertEquals("simpleControllerB", dest2.getBeanName());
     }
 }

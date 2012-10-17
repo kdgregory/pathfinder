@@ -19,7 +19,7 @@ import java.io.InputStream;
 import java.util.List;
 import java.util.Set;
 
-import org.w3c.dom.Document;
+import org.w3c.dom.Element;
 
 import org.junit.Test;
 import static org.junit.Assert.*;
@@ -27,7 +27,6 @@ import static org.junit.Assert.*;
 import org.apache.commons.io.IOUtils;
 
 import net.sf.kdgcommons.io.IOUtil;
-import net.sf.practicalxml.DomUtil;
 
 import com.kdgregory.pathfinder.core.WarMachine.ServletMapping;
 import com.kdgregory.pathfinder.core.impl.WarMachineImpl;
@@ -70,22 +69,24 @@ public class TestWarMachine
 
 
     @Test
-    public void testGetWebXml() throws Exception
+    public void testXpathAgainstWebXml() throws Exception
     {
         WarMachine machine = TestHelpers.createWarMachine(WarNames.SERVLET);
 
-        Document dom = machine.getWebXml();
-        assertEquals("web-app", DomUtil.getLocalName(dom.getDocumentElement()));
+        List<Element> mappings = machine.getWebXmlPath("//j2ee:servlet-mapping")
+                                 .evaluate(machine.getWebXml(), Element.class);
+        assertEquals("number of servlet mappings", 2, mappings.size());
     }
 
 
     @Test
-    public void testGetWebXml25() throws Exception
+    public void testXpathAgainstWebXml25() throws Exception
     {
         WarMachine machine = TestHelpers.createWarMachine(WarNames.SERVLET_25);
 
-        Document dom = machine.getWebXml();
-        assertEquals("web-app", DomUtil.getLocalName(dom.getDocumentElement()));
+        List<Element> mappings = machine.getWebXmlPath("//j2ee:servlet-mapping")
+                                 .evaluate(machine.getWebXml(), Element.class);
+        assertEquals("number of servlet mappings", 2, mappings.size());
     }
 
 

@@ -45,6 +45,7 @@ import net.sf.kdgcommons.lang.StringUtil;
 import net.sf.kdgcommons.lang.UnreachableCodeException;
 import net.sf.practicalxml.DomUtil;
 import net.sf.practicalxml.ParseUtil;
+import net.sf.practicalxml.xpath.XPathWrapper;
 import net.sf.practicalxml.xpath.XPathWrapperFactory;
 import net.sf.practicalxml.xpath.XPathWrapperFactory.CacheType;
 
@@ -59,7 +60,7 @@ implements WarMachine
 {
     // The namespace changed between version 2.4 and 2.5; we'll pick whichever
     // one applies to current war; may need to add optional code later
-//
+
     private final static String NS_SERVLET_24 = "http://java.sun.com/xml/ns/j2ee";
     private final static String NS_SERVLET_25 = "http://java.sun.com/xml/ns/javaee";
 
@@ -169,6 +170,13 @@ implements WarMachine
     public Document getWebXml()
     {
         return webXml;
+    }
+
+
+    @Override
+    public XPathWrapper getWebXmlPath(String path)
+    {
+        return xpathFact.newXPath(path);
     }
 
 
@@ -328,8 +336,12 @@ implements WarMachine
             String mappingUrl = xpathFact.newXPath("j2ee:url-pattern").evaluateAsString(mapping);
             Element servlet = servletLookup.get(servletName);
             if (servlet == null)
-                logger.warn("<servlet-mapping> \"" + mappingUrl
-                            + "\" does not have <servlet> entry");
+            {
+                logger.warn("<servlet-mapping> \"" + servletName + "\""
+                            + " (mapping \"" + mappingUrl + "\")"
+                            + " does not have <servlet> entry; skipping");
+                continue;
+            }
             servletMappings.add(new ServletMappingImpl(mappingUrl, servlet));
         }
         Collections.sort(servletMappings);

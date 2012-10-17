@@ -68,11 +68,11 @@ public class TestSpring2Default
     {
         // this bean is defined in the servlet context
         SpringDestination dest1 = (SpringDestination)pathRepo.get("/servlet/foo.html", HttpMethod.GET);
-        assertEquals("simpleControllerA", dest1.getBeanDefinition().getBeanName());
+        assertEquals("simpleControllerA", dest1.getBeanName());
 
         // and this one is defined in the root
         SpringDestination dest2 = (SpringDestination)pathRepo.get("/servlet/bar.html", HttpMethod.POST);
-        assertEquals("simpleControllerB", dest2.getBeanDefinition().getBeanName());
+        assertEquals("simpleControllerB", dest2.getBeanName());
     }
 
 }

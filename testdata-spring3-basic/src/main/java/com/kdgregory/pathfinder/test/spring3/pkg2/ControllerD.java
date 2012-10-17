@@ -18,27 +18,31 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.servlet.ModelAndView;
 
 
 /**
- *  This controller is used to test the case where @RequestMapping is applied at
- *  the top of the class, and not on individual methods.
+ *  This controller is used to test mappings with path variables. It also ensures
+ *  that we insert a slash between the request-level mapping and the path-level
+ *  mapping.
  */
 @Controller
-@RequestMapping("/C")
-public class ControllerC
+@RequestMapping("/D")
+public class ControllerD
 {
-    @RequestMapping(method=RequestMethod.GET)
-    protected ModelAndView getC(
+    @RequestMapping(value="{id}", method=RequestMethod.GET)
+    protected ModelAndView getD(
             HttpServletRequest request,
-            HttpServletResponse response)
+            HttpServletResponse response,
+            @PathVariable String id)
     throws Exception
     {
         ModelAndView mav = new ModelAndView("simple");
         mav.addObject("reqUrl", request.getRequestURI());
         mav.addObject("controller", getClass().getName());
+        mav.addObject("id", id);
         return mav;
     }}

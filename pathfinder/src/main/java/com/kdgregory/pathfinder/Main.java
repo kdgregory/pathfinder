@@ -81,6 +81,12 @@ public class Main
 
     private static void dumpRepo(PathRepo repo, Map<InvocationOptions, Boolean> options)
     {
+        int urlWidth = 16;
+        for (String url : repo)
+            urlWidth = Math.max(urlWidth, url.length());
+
+        String format = "%-" + urlWidth + "s  %-6s  %s";
+
         for (String url : repo)
         {
             Map<HttpMethod,Destination> destMap = repo.get(url);
@@ -88,7 +94,7 @@ public class Main
             {
                 Destination dest = destMap.get(method);
                 System.out.println(
-                        String.format("%-30s %-8s %s", url, method, dest.toString(options)));
+                        String.format(format, url, method, dest.toString(options)));
             }
         }
     }

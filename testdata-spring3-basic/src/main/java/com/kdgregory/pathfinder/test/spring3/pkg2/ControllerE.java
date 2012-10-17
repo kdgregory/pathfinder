@@ -19,40 +19,51 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.ModelAndView;
 
 
 /**
- *  This controller is used to test cases where there's a @RequestMapping at
- *  both the class and method level.
+ *  Controller for testing request parameters. Method {@link #getFoo} uses explicit
+ *  parameter definitions, method {@link #getBar} infers parameter types from debug
+ *  information.
  */
 @Controller
-@RequestMapping("/B")
-public class ControllerB
+public class ControllerE
 {
-    @RequestMapping(value="/bar.html", method=RequestMethod.GET)
-    protected ModelAndView getBar(
+    @RequestMapping(value="/E1")
+    protected ModelAndView getFoo(
             HttpServletRequest request,
-            HttpServletResponse response)
+            HttpServletResponse response,
+            @RequestParam(value="argle",  required=true)                     String argle,
+            @RequestParam(value="bargle", required=false)                    Integer bargle,
+            @RequestParam(value="wargle", required=false, defaultValue="12") int wargle,
+            @RequestParam(value="zargle")                                    Integer zargle)
     throws Exception
     {
         ModelAndView mav = new ModelAndView("simple");
         mav.addObject("reqUrl", request.getRequestURI());
         mav.addObject("controller", getClass().getName());
+        mav.addObject("argle", argle);
+        mav.addObject("bargle", bargle);
+        mav.addObject("wargle", wargle);
         return mav;
     }
 
 
-    @RequestMapping(value="/baz.html", method=RequestMethod.POST)
-    protected ModelAndView setBaz(
+    @RequestMapping(value="/E2")
+    protected ModelAndView getBar(
             HttpServletRequest request,
-            HttpServletResponse response)
+            HttpServletResponse response,
+            @RequestParam String argle,
+            @RequestParam Integer bargle)
     throws Exception
     {
         ModelAndView mav = new ModelAndView("simple");
         mav.addObject("reqUrl", request.getRequestURI());
         mav.addObject("controller", getClass().getName());
+        mav.addObject("argle", argle);
+        mav.addObject("bargle", bargle);
         return mav;
     }
 }

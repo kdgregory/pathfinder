@@ -62,14 +62,12 @@ public class TestSpring3
     {
         processWar(WarNames.SPRING3_BASIC);
 
-        // the assertion will throw an NPE if the mapping wasn't found
-
-        SpringDestination dest1 = (SpringDestination)pathRepo.get("/servlet/foo.html", HttpMethod.GET);
-        assertNotNull("mapping exists", dest1);
-        assertEquals("bean",    "controllerA", dest1.getBeanDefinition().getBeanName());
-        assertEquals("class",   "com.kdgregory.pathfinder.test.spring3.pkg1.ControllerA", dest1.getClassName());
-        assertEquals("method",  "getFoo", dest1.getMethodName());
-        assertEquals("toString","com.kdgregory.pathfinder.test.spring3.pkg1.ControllerA.getFoo()", dest1.toString());
+        SpringDestination dest = (SpringDestination)pathRepo.get("/servlet/foo.html", HttpMethod.GET);
+        assertNotNull("mapping exists", dest);
+        assertEquals("bean",    "myController", dest.getBeanName());
+        assertEquals("class",   "com.kdgregory.pathfinder.test.spring3.pkg1.ControllerA", dest.getClassName());
+        assertEquals("method",  "getFoo", dest.getMethodName());
+        assertEquals("toString","com.kdgregory.pathfinder.test.spring3.pkg1.ControllerA.getFoo()", dest.toString());
     }
 
 
@@ -80,14 +78,14 @@ public class TestSpring3
 
         SpringDestination dest1 = (SpringDestination)pathRepo.get("/servlet/B/bar.html", HttpMethod.GET);
         assertNotNull("GET mapping exists", dest1);
-        assertEquals("GET bean",    "controllerB", dest1.getBeanDefinition().getBeanName());
+        assertEquals("GET bean",    "controllerB", dest1.getBeanName());
         assertEquals("GET class",   "com.kdgregory.pathfinder.test.spring3.pkg2.ControllerB", dest1.getClassName());
         assertEquals("GET method",  "getBar", dest1.getMethodName());
         assertEquals("toString","com.kdgregory.pathfinder.test.spring3.pkg2.ControllerB.getBar()", dest1.toString());
 
         SpringDestination dest2 = (SpringDestination)pathRepo.get("/servlet/B/baz.html", HttpMethod.POST);
         assertNotNull("POST mapping exists", dest2);
-        assertEquals("POST bean",   "controllerB", dest2.getBeanDefinition().getBeanName());
+        assertEquals("POST bean",   "controllerB", dest2.getBeanName());
         assertEquals("POST class",  "com.kdgregory.pathfinder.test.spring3.pkg2.ControllerB", dest2.getClassName());
         assertEquals("POST method", "setBaz", dest2.getMethodName());
         assertEquals("toString","com.kdgregory.pathfinder.test.spring3.pkg2.ControllerB.setBaz()", dest2.toString());
@@ -101,10 +99,24 @@ public class TestSpring3
 
         SpringDestination dest1 = (SpringDestination)pathRepo.get("/servlet/C", HttpMethod.GET);
         assertNotNull("mapping exists", dest1);
-        assertEquals("bean",    "controllerC", dest1.getBeanDefinition().getBeanName());
+        assertEquals("bean",    "controllerC", dest1.getBeanName());
         assertEquals("class",   "com.kdgregory.pathfinder.test.spring3.pkg2.ControllerC", dest1.getClassName());
         assertEquals("method",  "getC", dest1.getMethodName());
         assertEquals("toString","com.kdgregory.pathfinder.test.spring3.pkg2.ControllerC.getC()", dest1.toString());
+    }
+
+
+    @Test
+    public void testMappingWithPathVariable() throws Exception
+    {
+        processWar(WarNames.SPRING3_BASIC);
+
+        SpringDestination est = (SpringDestination)pathRepo.get("/servlet/D/{id}", HttpMethod.GET);
+        assertNotNull("mapping exists", est);
+        assertEquals("bean",    "controllerD", est.getBeanName());
+        assertEquals("class",   "com.kdgregory.pathfinder.test.spring3.pkg2.ControllerD", est.getClassName());
+        assertEquals("method",  "getD", est.getMethodName());
+        assertEquals("toString","com.kdgregory.pathfinder.test.spring3.pkg2.ControllerD.getD()", est.toString());
     }
 
 
@@ -116,16 +128,16 @@ public class TestSpring3
         // verify that we add all variants when method isn't specified
 
         SpringDestination dest1a = (SpringDestination)pathRepo.get("/servlet/foo.html", HttpMethod.GET);
-        assertEquals("foo.html GET", "controllerA", dest1a.getBeanDefinition().getBeanName());
+        assertEquals("foo.html GET", "myController", dest1a.getBeanName());
 
         SpringDestination dest1b = (SpringDestination)pathRepo.get("/servlet/foo.html", HttpMethod.POST);
-        assertEquals("foo.html POST", "controllerA", dest1b.getBeanDefinition().getBeanName());
+        assertEquals("foo.html POST", "myController", dest1b.getBeanName());
 
         SpringDestination dest1c = (SpringDestination)pathRepo.get("/servlet/foo.html", HttpMethod.PUT);
-        assertEquals("foo.html PUT", "controllerA", dest1c.getBeanDefinition().getBeanName());
+        assertEquals("foo.html PUT", "myController", dest1c.getBeanName());
 
         SpringDestination dest1d = (SpringDestination)pathRepo.get("/servlet/foo.html", HttpMethod.DELETE);
-        assertEquals("foo.html DELETE", "controllerA", dest1d.getBeanDefinition().getBeanName());
+        assertEquals("foo.html DELETE", "myController", dest1d.getBeanName());
 
         // and that we don't add methods that aren't specified
 
@@ -141,19 +153,19 @@ public class TestSpring3
 
         SpringDestination dest1 = (SpringDestination)pathRepo.get("/foo.html", HttpMethod.GET);
         assertNotNull("method-only mapping exists", dest1);
-        assertEquals("method-only bean", "controllerA", dest1.getBeanDefinition().getBeanName());
+        assertEquals("method-only bean", "controllerA", dest1.getBeanName());
 
         SpringDestination dest2 = (SpringDestination)pathRepo.get("/B/bar.html", HttpMethod.GET);
         assertNotNull("class/method GET exists", dest2);
-        assertEquals("class/method GET bean", "controllerB", dest2.getBeanDefinition().getBeanName());
+        assertEquals("class/method GET bean", "controllerB", dest2.getBeanName());
 
         SpringDestination dest3 = (SpringDestination)pathRepo.get("/B/baz.html", HttpMethod.POST);
         assertNotNull("class/method POST exists", dest3);
-        assertEquals("class/method POST bean", "controllerB", dest3.getBeanDefinition().getBeanName());
+        assertEquals("class/method POST bean", "controllerB", dest3.getBeanName());
 
         SpringDestination dest4 = (SpringDestination)pathRepo.get("/C", HttpMethod.GET);
         assertNotNull("class-only mapping exists", dest3);
-        assertEquals("class-only bean", "controllerC", dest4.getBeanDefinition().getBeanName());
+        assertEquals("class-only bean", "controllerC", dest4.getBeanName());
     }
 
 
@@ -164,19 +176,19 @@ public class TestSpring3
 
         SpringDestination dest1 = (SpringDestination)pathRepo.get("/servlet/foo.html", HttpMethod.GET);
         assertNotNull("method-only mapping exists", dest1);
-        assertEquals("method-only bean", "controllerA", dest1.getBeanDefinition().getBeanName());
+        assertEquals("method-only bean", "controllerA", dest1.getBeanName());
 
         SpringDestination dest2 = (SpringDestination)pathRepo.get("/servlet/B/bar.html", HttpMethod.GET);
         assertNotNull("class/method GET exists", dest2);
-        assertEquals("class/method GET bean", "controllerB", dest2.getBeanDefinition().getBeanName());
+        assertEquals("class/method GET bean", "controllerB", dest2.getBeanName());
 
         SpringDestination dest3 = (SpringDestination)pathRepo.get("/servlet/B/baz.html", HttpMethod.POST);
         assertNotNull("class/method POST exists", dest3);
-        assertEquals("class/method POST bean", "controllerB", dest3.getBeanDefinition().getBeanName());
+        assertEquals("class/method POST bean", "controllerB", dest3.getBeanName());
 
         SpringDestination dest4 = (SpringDestination)pathRepo.get("/servlet/C", HttpMethod.GET);
         assertNotNull("class-only mapping exists", dest3);
-        assertEquals("class-only bean", "controllerC", dest4.getBeanDefinition().getBeanName());
+        assertEquals("class-only bean", "controllerC", dest4.getBeanName());
     }
 
 
@@ -185,23 +197,50 @@ public class TestSpring3
     {
         processWar(WarNames.SPRING3_BASIC);
 
-        SpringDestination dest = (SpringDestination)pathRepo.get("/servlet/foo.html", HttpMethod.GET);
+        SpringDestination dest = (SpringDestination)pathRepo.get("/servlet/E1", HttpMethod.GET);
         Map<String,RequestParameter> params = dest.getParams();
-        assertEquals("#/params", 3, params.size());
-        
+        assertEquals("#/params", 4, params.size());
+
         assertEquals("param name: argle",   "argle",             params.get("argle").getName());
         assertEquals("param type: argle",   "java.lang.String",  params.get("argle").getType());
         assertEquals("default val: argle",  "",                  params.get("argle").getDefaultValue());
         assertTrue("required: argle",                            params.get("argle").isRequired());
-        
+
         assertEquals("param name: bargle",  "bargle",            params.get("bargle").getName());
         assertEquals("param type: bargle",  "java.lang.Integer", params.get("bargle").getType());
-        assertEquals("default val: bargle", "12",                params.get("bargle").getDefaultValue());
+        assertEquals("default val: bargle", "",                  params.get("bargle").getDefaultValue());
         assertFalse("required: bargle",                          params.get("bargle").isRequired());
-        
+
         assertEquals("param name: wargle",  "wargle",            params.get("wargle").getName());
         assertEquals("paramtype : wargle",  "int",               params.get("wargle").getType());
-        assertEquals("default val: wargle", "",                  params.get("wargle").getDefaultValue());
+        assertEquals("default val: wargle", "12",                params.get("wargle").getDefaultValue());
         assertFalse("required: wargle",                          params.get("wargle").isRequired());
+
+        // added test: params are required by default
+        assertEquals("param name: zargle",  "zargle",            params.get("zargle").getName());
+        assertEquals("param type: zargle",  "java.lang.Integer", params.get("zargle").getType());
+        assertEquals("default val: zargle", "",                  params.get("zargle").getDefaultValue());
+        assertTrue("required: zargle",                           params.get("zargle").isRequired());
+    }
+
+
+    @Test
+    public void testInferredRequestParameters() throws Exception
+    {
+        processWar(WarNames.SPRING3_BASIC);
+
+        SpringDestination dest = (SpringDestination)pathRepo.get("/servlet/E2", HttpMethod.GET);
+        Map<String,RequestParameter> params = dest.getParams();
+        assertEquals("#/params", 2, params.size());
+
+        assertEquals("param name: argle",   "argle",             params.get("argle").getName());
+        assertEquals("param type: argle",   "java.lang.String",  params.get("argle").getType());
+        assertEquals("default val: argle",  "",                  params.get("argle").getDefaultValue());
+        assertTrue("required: argle",                            params.get("argle").isRequired());
+
+        assertEquals("param name: bargle",  "bargle",            params.get("bargle").getName());
+        assertEquals("param type: bargle",  "java.lang.Integer", params.get("bargle").getType());
+        assertEquals("default val: bargle", "",                  params.get("bargle").getDefaultValue());
+        assertTrue("required: bargle",                           params.get("bargle").isRequired());
     }
 }

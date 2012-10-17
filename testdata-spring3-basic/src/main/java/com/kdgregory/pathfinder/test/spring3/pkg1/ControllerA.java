@@ -14,33 +14,29 @@
 
 package com.kdgregory.pathfinder.test.spring3.pkg1;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.ModelAndView;
 
 
-@Controller
+/**
+ *  The basic controller; responds to everything, isn't picky about what it's given.
+ */
+@Controller("myController")
 public class ControllerA
 {
     @RequestMapping(value="/foo.html")
     protected ModelAndView getFoo(
             HttpServletRequest request,
-            HttpServletResponse response,
-            @RequestParam(value="argle",  required=true)                     String argle,
-            @RequestParam(value="bargle", required=false, defaultValue="12") Integer bargle,
-            @RequestParam(value="wargle", required=false)                    int wargle) 
+            HttpServletResponse response)
     throws Exception
     {
-        Map<String,String> model = new HashMap<String,String>();
-        model.put("reqUrl", request.getRequestURI());
-        model.put("controller", getClass().getName());
-        return new ModelAndView("simple", "data", model);
+        ModelAndView mav = new ModelAndView("simple");
+        mav.addObject("reqUrl", request.getRequestURI());
+        mav.addObject("controller", getClass().getName());
+        return mav;
     }
 }

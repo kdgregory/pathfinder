@@ -77,10 +77,10 @@ public class TestSpring2Simple
     public void testSimpleUrlMappings() throws Exception
     {
         SpringDestination dest1 = (SpringDestination)pathRepo.get("/servlet/foo.html", HttpMethod.GET);
-        assertEquals("simpleControllerA", dest1.getBeanDefinition().getBeanName());
+        assertEquals("simpleControllerA", dest1.getBeanName());
 
         SpringDestination dest2 = (SpringDestination)pathRepo.get("/servlet/bar.html", HttpMethod.GET);
-        assertEquals("simpleControllerB", dest2.getBeanDefinition().getBeanName());
+        assertEquals("simpleControllerB", dest2.getBeanName());
     }
 
 

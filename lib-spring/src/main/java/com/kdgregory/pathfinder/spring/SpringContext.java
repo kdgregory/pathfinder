@@ -165,7 +165,7 @@ public class SpringContext
         for (Element elem : scanDefs)
         {
             ClasspathScanner scanner = new ClasspathScannerImpl()
-                                       .setIncludedAnnotations("org.springframework.stereotype.Controller");
+                                       .setIncludedAnnotations(SpringConstants.CONTROLLER_ANNO_CLASS);
             String basePackage = elem.getAttribute("base-package");
             String[] bp2 = basePackage.split(",");
             for (String pkg : bp2)
@@ -197,6 +197,7 @@ public class SpringContext
 
     private List<String> decomposeContextLocation(String contextLocation)
     {
+        contextLocation = StringUtil.trim(contextLocation);
         String[] paths = contextLocation.split("[,;]|\\s+");
         // FIXME - support wildcards
         return Arrays.asList(paths);
