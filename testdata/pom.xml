@@ -83,7 +83,13 @@
         </dependency>
         <dependency>
             <groupId>com.kdgregory.pathfinder</groupId>
-            <artifactId>pathfinder-testdata-spring3-root</artifactId>
+            <artifactId>pathfinder-testdata-spring-dispatch-1</artifactId>
+            <version>${project.version}</version>
+            <type>war</type>
+        </dependency>
+        <dependency>
+            <groupId>com.kdgregory.pathfinder</groupId>
+            <artifactId>pathfinder-testdata-spring-dispatch-2</artifactId>
             <version>${project.version}</version>
             <type>war</type>
         </dependency>

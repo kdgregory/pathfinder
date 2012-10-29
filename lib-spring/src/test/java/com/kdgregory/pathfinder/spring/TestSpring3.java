@@ -17,16 +17,12 @@ package com.kdgregory.pathfinder.spring;
 import java.util.Map;
 
 import org.junit.Test;
+
 import static org.junit.Assert.*;
 
 import com.kdgregory.pathfinder.core.HttpMethod;
-import com.kdgregory.pathfinder.core.PathRepo;
-import com.kdgregory.pathfinder.core.WarMachine;
-import com.kdgregory.pathfinder.core.impl.PathRepoImpl;
-import com.kdgregory.pathfinder.servlet.ServletInspector;
 import com.kdgregory.pathfinder.spring.SpringDestination.RequestParameter;
 import com.kdgregory.pathfinder.test.WarNames;
-import com.kdgregory.pathfinder.util.TestHelpers;
 
 
 /**
@@ -35,27 +31,8 @@ import com.kdgregory.pathfinder.util.TestHelpers;
  *  implementation process).
  */
 public class TestSpring3
+extends AbstractSpringTestcase
 {
-    private static WarMachine machine;
-    private PathRepo pathRepo;
-
-//----------------------------------------------------------------------------
-//  Support code
-//----------------------------------------------------------------------------
-
-    private void processWar(String warName)
-    throws Exception
-    {
-        machine = TestHelpers.createWarMachine(warName);
-        pathRepo = new PathRepoImpl();
-        new ServletInspector().inspect(machine, pathRepo);
-        new SpringInspector().inspect(machine, pathRepo);
-    }
-
-
-//----------------------------------------------------------------------------
-//  Testcases
-//----------------------------------------------------------------------------
 
     @Test
     public void testMappingOnMethodOnly() throws Exception
@@ -143,52 +120,6 @@ public class TestSpring3
 
         SpringDestination dest7 = (SpringDestination)pathRepo.get("/servlet/B/baz.html", HttpMethod.GET);
         assertNull("baz.html GET",  dest7);
-    }
-
-
-    @Test
-    public void testDispatcherServletMappedToRoot() throws Exception
-    {
-        processWar(WarNames.SPRING3_ROOT);
-
-        SpringDestination dest1 = (SpringDestination)pathRepo.get("/foo.html", HttpMethod.GET);
-        assertNotNull("method-only mapping exists", dest1);
-        assertEquals("method-only bean", "controllerA", dest1.getBeanName());
-
-        SpringDestination dest2 = (SpringDestination)pathRepo.get("/B/bar.html", HttpMethod.GET);
-        assertNotNull("class/method GET exists", dest2);
-        assertEquals("class/method GET bean", "controllerB", dest2.getBeanName());
-
-        SpringDestination dest3 = (SpringDestination)pathRepo.get("/B/baz.html", HttpMethod.POST);
-        assertNotNull("class/method POST exists", dest3);
-        assertEquals("class/method POST bean", "controllerB", dest3.getBeanName());
-
-        SpringDestination dest4 = (SpringDestination)pathRepo.get("/C", HttpMethod.GET);
-        assertNotNull("class-only mapping exists", dest3);
-        assertEquals("class-only bean", "controllerC", dest4.getBeanName());
-    }
-
-
-    @Test
-    public void testDispatcherServletMappedWithoutTrailingWildcard() throws Exception
-    {
-        processWar(WarNames.SPRING3_ROOT);
-
-        SpringDestination dest1 = (SpringDestination)pathRepo.get("/servlet/foo.html", HttpMethod.GET);
-        assertNotNull("method-only mapping exists", dest1);
-        assertEquals("method-only bean", "controllerA", dest1.getBeanName());
-
-        SpringDestination dest2 = (SpringDestination)pathRepo.get("/servlet/B/bar.html", HttpMethod.GET);
-        assertNotNull("class/method GET exists", dest2);
-        assertEquals("class/method GET bean", "controllerB", dest2.getBeanName());
-
-        SpringDestination dest3 = (SpringDestination)pathRepo.get("/servlet/B/baz.html", HttpMethod.POST);
-        assertNotNull("class/method POST exists", dest3);
-        assertEquals("class/method POST bean", "controllerB", dest3.getBeanName());
-
-        SpringDestination dest4 = (SpringDestination)pathRepo.get("/servlet/C", HttpMethod.GET);
-        assertNotNull("class-only mapping exists", dest3);
-        assertEquals("class-only bean", "controllerC", dest4.getBeanName());
     }
 
 

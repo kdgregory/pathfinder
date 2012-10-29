@@ -74,7 +74,7 @@ implements Inspector
         logger.debug("extracted " + springMappings.size() + " Spring mappings");
         for (ServletMapping mapping : springMappings)
         {
-            String urlPrefix = extractUrlPrefix(mapping.getUrlPattern());
+            String urlPrefix = StringUtil.extractLeftOfLast(mapping.getUrlPattern(), "/");
             String configLoc = mapping.getInitParams().get("contextConfigLocation");
             if (StringUtil.isBlank(configLoc))
             {
@@ -136,18 +136,6 @@ implements Inspector
             }
         }
         return result;
-    }
-
-
-    private String extractUrlPrefix(String urlPattern)
-    {
-        int trimAt = urlPattern.lastIndexOf("/");
-        String prefix = (trimAt > 0)
-                      ? urlPattern.substring(0, trimAt)
-                      : urlPattern;
-        if (prefix.equals("/"))
-            prefix = "";
-        return prefix;
     }
 
 

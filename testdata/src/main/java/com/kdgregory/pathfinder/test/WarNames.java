@@ -20,11 +20,12 @@ package com.kdgregory.pathfinder.test;
  */
 public class WarNames
 {
-    public final static String  SERVLET         = "pathfinder-testdata-servlet.war";
-    public final static String  SERVLET_25      = "pathfinder-testdata-servlet25.war";
-    public final static String  SPRING_SPLIT    = "pathfinder-testdata-spring-split.war";
-    public final static String  SPRING_DEFAULT  = "pathfinder-testdata-spring-default.war";
-    public final static String  SPRING2_SIMPLE  = "pathfinder-testdata-spring2-simple.war";
-    public final static String  SPRING3_BASIC   = "pathfinder-testdata-spring3-basic.war";
-    public final static String  SPRING3_ROOT    = "pathfinder-testdata-spring3-root.war";
+    public final static String  SERVLET             = "pathfinder-testdata-servlet.war";
+    public final static String  SERVLET_25          = "pathfinder-testdata-servlet25.war";
+    public final static String  SPRING_SPLIT        = "pathfinder-testdata-spring-split.war";
+    public final static String  SPRING_DEFAULT      = "pathfinder-testdata-spring-default.war";
+    public final static String  SPRING2_SIMPLE      = "pathfinder-testdata-spring2-simple.war";
+    public final static String  SPRING3_BASIC       = "pathfinder-testdata-spring3-basic.war";
+    public final static String  SPRING_ROOT_DISP_1   = "pathfinder-testdata-spring-dispatch-1.war";
+    public final static String  SPRING_ROOT_DISP_2   = "pathfinder-testdata-spring-dispatch-2.war";
 }

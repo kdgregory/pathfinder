@@ -43,8 +43,8 @@ public interface WarMachine
      *  from this DOM.
      */
     public Document getWebXml();
-
-
+    
+    
     /**
      *  Returns an XPath that may be used to retrieve content from this WAR's
      *  <code>web.xml</code>. Elements within the file must be prefixed with
