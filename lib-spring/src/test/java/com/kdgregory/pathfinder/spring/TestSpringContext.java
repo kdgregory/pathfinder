@@ -48,7 +48,7 @@ public class TestSpringContext
         BeanDefinition b1 = context.getBean("simpleUrlMapping");
         assertNotNull("able to find bean by name", b1);
         assertEquals("bean name set",              "simpleUrlMapping",
-                                                   b1.getBeanName());
+                                                   b1.getBeanId());
         assertEquals("bean class set",             "org.springframework.web.servlet.handler.SimpleUrlHandlerMapping",
                                                    b1.getBeanClass());
         assertNotNull("bean definition has XML",   b1.getBeanDef());
@@ -65,11 +65,11 @@ public class TestSpringContext
         // the same file, loaded from a WAR
         logger.info("testGetBeansFromSimpleContextInWar()");
 
-        WarMachine war = TestHelpers.createWarMachine(WarNames.SPRING2_SIMPLE);
+        WarMachine war = TestHelpers.createWarMachine(WarNames.SPRING_SIMPLE);
         SpringContext context = new SpringContext(war, "/WEB-INF/spring/servletContext.xml");
         assertEquals("number of beans defined", 4, context.getBeans().size());
 
-        BeanDefinition b1 = context.getBean("simpleUrlMapping");
+        BeanDefinition b1 = context.getBean("urlMapping");
         assertNotNull("able to find bean by name", b1);
         // if we got this far, I'll assume that the assertions from the prior test will all pass
     }
@@ -165,7 +165,7 @@ public class TestSpringContext
 
         ClasspathScannerImpl scanner = (ClasspathScannerImpl)scanners.get(0);
         assertEquals("base package count", 1, scanner.getBasePackages().size());
-        assertEquals("base package config", Boolean.TRUE, scanner.getBasePackages().get("com/example/pkg1"));
+        assertEquals("base package config", Boolean.TRUE, scanner.getBasePackages().get("com.example.pkg1"));
 
         Set<String> annotationFilter = scanner.getIncludedAnnotations();
         assertEquals("count of filter annotations", 1, annotationFilter.size());
@@ -182,9 +182,9 @@ public class TestSpringContext
 
         ClasspathScannerImpl scanner = (ClasspathScannerImpl)scanners.get(0);
         assertEquals("base package count", 3, scanner.getBasePackages().size());
-        assertEquals("base package config", Boolean.TRUE, scanner.getBasePackages().get("com/example/pkg1"));
-        assertEquals("base package config", Boolean.TRUE, scanner.getBasePackages().get("com/example/pkg2"));
-        assertEquals("base package config", Boolean.TRUE, scanner.getBasePackages().get("com/example/pkg3"));
+        assertEquals("base package config", Boolean.TRUE, scanner.getBasePackages().get("com.example.pkg1"));
+        assertEquals("base package config", Boolean.TRUE, scanner.getBasePackages().get("com.example.pkg2"));
+        assertEquals("base package config", Boolean.TRUE, scanner.getBasePackages().get("com.example.pkg3"));
     }
 
 
@@ -197,14 +197,12 @@ public class TestSpringContext
 
         ClasspathScannerImpl scanner1 = (ClasspathScannerImpl)scanners.get(0);
         assertEquals("scanner1 package count", 1, scanner1.getBasePackages().size());
-        assertEquals("scanner1 package config", Boolean.TRUE, scanner1.getBasePackages().get("com/example/pkg1"));
+        assertEquals("scanner1 package config", Boolean.TRUE, scanner1.getBasePackages().get("com.example.pkg1"));
 
         ClasspathScannerImpl scanner2 = (ClasspathScannerImpl)scanners.get(1);
         assertEquals("scanner2 package count", 3, scanner2.getBasePackages().size());
-        assertEquals("scanner2 package config", Boolean.TRUE, scanner2.getBasePackages().get("com/example/pkg1"));
-        assertEquals("scanner2 package config", Boolean.TRUE, scanner2.getBasePackages().get("com/example/pkg2"));
-        assertEquals("scanner2 package config", Boolean.TRUE, scanner2.getBasePackages().get("com/example/pkg3"));
+        assertEquals("scanner2 package config", Boolean.TRUE, scanner2.getBasePackages().get("com.example.pkg1"));
+        assertEquals("scanner2 package config", Boolean.TRUE, scanner2.getBasePackages().get("com.example.pkg2"));
+        assertEquals("scanner2 package config", Boolean.TRUE, scanner2.getBasePackages().get("com.example.pkg3"));
     }
-
-
 }

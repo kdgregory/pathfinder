@@ -7,16 +7,13 @@
                         http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
                         http://www.springframework.org/schema/mvc     http://www.springframework.org/schema/mvc/spring-mvc.xsd">
 
-	<bean id="simpleControllerA"
-		  class="com.kdgregory.pathfinder.test.spring2.SimpleControllerA">
-    </bean>
+	<bean id="controllerA" class="com.kdgregory.pathfinder.test.spring2.ControllerA"/>
 
-	<bean id="simpleUrlMapping"
-		  class="org.springframework.web.servlet.handler.SimpleUrlHandlerMapping">
+	<bean id="urlMapping" class="org.springframework.web.servlet.handler.SimpleUrlHandlerMapping">
 		  <property name="mappings">
 		  	<props>
-		  		<prop key="/foo.html">simpleControllerA</prop>
-                <prop key="/bar.html">simpleControllerB</prop>
+		  		<prop key="/foo">controllerA</prop>
+                <prop key="/bar">controllerB</prop>
 		  	</props>
 		  </property>
     </bean>

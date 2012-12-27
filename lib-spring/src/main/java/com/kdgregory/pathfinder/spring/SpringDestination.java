@@ -39,7 +39,7 @@ implements Destination
      */
     public SpringDestination(BeanDefinition beanDef)
     {
-        this.beanName = beanDef.getBeanName();
+        this.beanName = beanDef.getBeanId();
         this.className = beanDef.getBeanClass();
         this.methodName = "";
         this.requestParams = Collections.emptyMap();
@@ -70,7 +70,7 @@ implements Destination
     }
 
 
-    public String getClassName()
+    public String getBeanClass()
     {
         return className;
     }
@@ -92,9 +92,9 @@ implements Destination
     public String toString()
     {
         if (StringUtil.isBlank(methodName))
-            return getClassName();
+            return getBeanClass();
         else
-            return getClassName() + "." + getMethodName() + "()";
+            return getBeanClass() + "." + getMethodName() + "()";
     }
 
 

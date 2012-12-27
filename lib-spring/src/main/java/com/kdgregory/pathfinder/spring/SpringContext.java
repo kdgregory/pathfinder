@@ -294,8 +294,8 @@ public class SpringContext
         for (Element bean : beans)
         {
             BeanDefinition def = new BeanDefinition(xpfact, bean);
-            beanDefinitions.put(def.getBeanName(), def);
-            logger.debug("found bean \"" + def.getBeanName() + "\" => " + def.getBeanClass());
+            beanDefinitions.put(def.getBeanId(), def);
+            logger.debug("found bean \"" + def.getBeanId() + "\" => " + def.getBeanClass());
         }
     }
 }

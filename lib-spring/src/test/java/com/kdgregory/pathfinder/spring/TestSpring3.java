@@ -37,12 +37,12 @@ extends AbstractSpringTestcase
     @Test
     public void testMappingOnMethodOnly() throws Exception
     {
-        processWar(WarNames.SPRING3_BASIC);
+        processWar(WarNames.SPRING_ANNO);
 
         SpringDestination dest = (SpringDestination)pathRepo.get("/servlet/foo.html", HttpMethod.GET);
         assertNotNull("mapping exists", dest);
         assertEquals("bean",    "myController", dest.getBeanName());
-        assertEquals("class",   "com.kdgregory.pathfinder.test.spring3.pkg1.ControllerA", dest.getClassName());
+        assertEquals("class",   "com.kdgregory.pathfinder.test.spring3.pkg1.ControllerA", dest.getBeanClass());
         assertEquals("method",  "getFoo", dest.getMethodName());
         assertEquals("toString","com.kdgregory.pathfinder.test.spring3.pkg1.ControllerA.getFoo()", dest.toString());
     }
@@ -51,19 +51,19 @@ extends AbstractSpringTestcase
     @Test
     public void testMappingOnClassAndMethod() throws Exception
     {
-        processWar(WarNames.SPRING3_BASIC);
+        processWar(WarNames.SPRING_ANNO);
 
         SpringDestination dest1 = (SpringDestination)pathRepo.get("/servlet/B/bar.html", HttpMethod.GET);
         assertNotNull("GET mapping exists", dest1);
         assertEquals("GET bean",    "controllerB", dest1.getBeanName());
-        assertEquals("GET class",   "com.kdgregory.pathfinder.test.spring3.pkg2.ControllerB", dest1.getClassName());
+        assertEquals("GET class",   "com.kdgregory.pathfinder.test.spring3.pkg2.ControllerB", dest1.getBeanClass());
         assertEquals("GET method",  "getBar", dest1.getMethodName());
         assertEquals("toString","com.kdgregory.pathfinder.test.spring3.pkg2.ControllerB.getBar()", dest1.toString());
 
         SpringDestination dest2 = (SpringDestination)pathRepo.get("/servlet/B/baz.html", HttpMethod.POST);
         assertNotNull("POST mapping exists", dest2);
         assertEquals("POST bean",   "controllerB", dest2.getBeanName());
-        assertEquals("POST class",  "com.kdgregory.pathfinder.test.spring3.pkg2.ControllerB", dest2.getClassName());
+        assertEquals("POST class",  "com.kdgregory.pathfinder.test.spring3.pkg2.ControllerB", dest2.getBeanClass());
         assertEquals("POST method", "setBaz", dest2.getMethodName());
         assertEquals("toString","com.kdgregory.pathfinder.test.spring3.pkg2.ControllerB.setBaz()", dest2.toString());
     }
@@ -72,12 +72,12 @@ extends AbstractSpringTestcase
     @Test
     public void testMappingOnClassOnly() throws Exception
     {
-        processWar(WarNames.SPRING3_BASIC);
+        processWar(WarNames.SPRING_ANNO);
 
         SpringDestination dest1 = (SpringDestination)pathRepo.get("/servlet/C", HttpMethod.GET);
         assertNotNull("mapping exists", dest1);
         assertEquals("bean",    "controllerC", dest1.getBeanName());
-        assertEquals("class",   "com.kdgregory.pathfinder.test.spring3.pkg2.ControllerC", dest1.getClassName());
+        assertEquals("class",   "com.kdgregory.pathfinder.test.spring3.pkg2.ControllerC", dest1.getBeanClass());
         assertEquals("method",  "getC", dest1.getMethodName());
         assertEquals("toString","com.kdgregory.pathfinder.test.spring3.pkg2.ControllerC.getC()", dest1.toString());
     }
@@ -86,12 +86,12 @@ extends AbstractSpringTestcase
     @Test
     public void testMappingWithPathVariable() throws Exception
     {
-        processWar(WarNames.SPRING3_BASIC);
+        processWar(WarNames.SPRING_ANNO);
 
         SpringDestination est = (SpringDestination)pathRepo.get("/servlet/D/{id}", HttpMethod.GET);
         assertNotNull("mapping exists", est);
         assertEquals("bean",    "controllerD", est.getBeanName());
-        assertEquals("class",   "com.kdgregory.pathfinder.test.spring3.pkg2.ControllerD", est.getClassName());
+        assertEquals("class",   "com.kdgregory.pathfinder.test.spring3.pkg2.ControllerD", est.getBeanClass());
         assertEquals("method",  "getD", est.getMethodName());
         assertEquals("toString","com.kdgregory.pathfinder.test.spring3.pkg2.ControllerD.getD()", est.toString());
     }
@@ -100,7 +100,7 @@ extends AbstractSpringTestcase
     @Test
     public void testRequestMethodSpecification() throws Exception
     {
-        processWar(WarNames.SPRING3_BASIC);
+        processWar(WarNames.SPRING_ANNO);
 
         // verify that we add all variants when method isn't specified
 
@@ -126,7 +126,7 @@ extends AbstractSpringTestcase
     @Test
     public void testRequestParameters() throws Exception
     {
-        processWar(WarNames.SPRING3_BASIC);
+        processWar(WarNames.SPRING_ANNO);
 
         SpringDestination dest = (SpringDestination)pathRepo.get("/servlet/E1", HttpMethod.GET);
         Map<String,RequestParameter> params = dest.getParams();
@@ -158,7 +158,7 @@ extends AbstractSpringTestcase
     @Test
     public void testInferredRequestParameters() throws Exception
     {
-        processWar(WarNames.SPRING3_BASIC);
+        processWar(WarNames.SPRING_ANNO);
 
         SpringDestination dest = (SpringDestination)pathRepo.get("/servlet/E2", HttpMethod.GET);
         Map<String,RequestParameter> params = dest.getParams();

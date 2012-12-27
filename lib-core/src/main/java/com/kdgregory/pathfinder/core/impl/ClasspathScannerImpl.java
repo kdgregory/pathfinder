@@ -14,7 +14,6 @@
 
 package com.kdgregory.pathfinder.core.impl;
 
-import java.io.InputStream;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -24,10 +23,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
-import org.apache.bcel.classfile.ClassParser;
-import org.apache.bcel.classfile.JavaClass;
-
-import net.sf.kdgcommons.io.IOUtil;
+import net.sf.kdgcommons.lang.StringUtil;
 
 import com.kdgregory.bcelx.classfile.Annotation;
 import com.kdgregory.bcelx.parser.AnnotationParser;
@@ -37,9 +33,8 @@ import com.kdgregory.pathfinder.core.WarMachine;
 
 /**
  *  This class contains the logic to scan a WAR's classpath, applying zero or
- *  more filters to the files. An unconfigured instance (one without filters)
- *  returns all files on the classpath. After configuration, instances are
- *  thread-safe.
+ *  more filters to the classes found there. An unconfigured instance (one
+ *  without filters) returns all classes on the classpath.
  */
 public class ClasspathScannerImpl
 implements ClasspathScanner
@@ -58,7 +53,7 @@ implements ClasspathScanner
         if (basePackages == null)
             basePackages = new HashMap<String,Boolean>();
 
-        basePackages.put(packageName.replace('.', '/'), Boolean.valueOf(includeSubPackages));
+        basePackages.put(packageName, Boolean.valueOf(includeSubPackages));
         return this;
     }
 
@@ -102,12 +97,17 @@ implements ClasspathScanner
     {
         // returns a TreeSet to simplify debugging; it's not part of the contract
         Set<String> result = new TreeSet<String>();
-        for (String file :  war.getFilesOnClasspath())
+        for (String fileName :  war.getFilesOnClasspath())
         {
-            boolean include = applyBasePackageFilter(file)
-                           && applyIncludedAnnotationFilter(war, file, parseResults);
+            if (! fileName.endsWith(".class"))
+                continue;
+
+            String className = StringUtil.extractLeftOfLast(fileName, ".class").replace("/", ".");
+            boolean include = applyBasePackageFilter(className)
+                           && applyIncludedAnnotationFilter(war, className, parseResults);
+
             if (include)
-                result.add(file);
+                result.add(className);
         }
         return result;
     }
@@ -141,8 +141,6 @@ implements ClasspathScanner
     {
         if (basePackages == null)
             return true;
-        if (!filename.endsWith(".class"))
-            return false;
 
         for (Map.Entry<String,Boolean> entry : basePackages.entrySet())
         {
@@ -151,7 +149,7 @@ implements ClasspathScanner
 
             if (!filename.startsWith(basePackage))
                 continue;
-            if (!includeSubPackages && (filename.lastIndexOf("/") > basePackage.length()))
+            if (!includeSubPackages && (filename.lastIndexOf(".") > basePackage.length()))
                 continue;
 
             return true;
@@ -160,47 +158,32 @@ implements ClasspathScanner
     }
 
 
-    private boolean applyIncludedAnnotationFilter(WarMachine war, String filename, Map<String,AnnotationParser> parseResults)
+    private boolean applyIncludedAnnotationFilter(WarMachine war, String className, Map<String,AnnotationParser> parseResults)
     {
         if (includedAnnotations == null)
             return true;
 
-        if (!filename.endsWith(".class"))
-            return false;
-
-        AnnotationParser ap = parseAnnotations(war, filename);
-        for (Annotation anno : ap.getClassVisibleAnnotations())
+        try
         {
-            if (includedAnnotations.contains(anno.getClassName()))
+            AnnotationParser ap = new AnnotationParser(war.loadClass(className));
+            for (Annotation anno : ap.getClassVisibleAnnotations())
             {
-                parseResults.put(filename, ap);
-                return true;
+                if (includedAnnotations.contains(anno.getClassName()))
+                {
+                    parseResults.put(className, ap);
+                    return true;
+                }
             }
+            return false;
         }
-        return false;
+        catch (Exception ex)
+        {
+            throw new RuntimeException("unable to parse class file: " + className, ex);
+        }
     }
 
 //----------------------------------------------------------------------------
 //  Other Intenals
 //----------------------------------------------------------------------------
 
-    private AnnotationParser parseAnnotations(WarMachine war, String classFileName)
-    {
-        InputStream in = null;
-        try
-        {
-            in = war.openClasspathFile(classFileName);
-            String className = classFileName.replace('/', '.');
-            JavaClass parsedClass = new ClassParser(in, className).parse();
-            return new AnnotationParser(parsedClass);
-        }
-        catch (Exception ex)
-        {
-            throw new RuntimeException("unable to parse file: " + classFileName, ex);
-        }
-        finally
-        {
-            IOUtil.closeQuietly(in);
-        }
-    }
 }

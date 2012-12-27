@@ -41,7 +41,7 @@ extends AbstractSpringTestcase
         processWar(WarNames.SPRING_ROOT_DISP_1);
 
         SpringDestination dest = (SpringDestination)pathRepo.get("/foo", HttpMethod.GET);
-        assertEquals("com.kdgregory.pathfinder.test.spring3.ControllerA", dest.getClassName());
+        assertEquals("com.kdgregory.pathfinder.test.spring3.ControllerA", dest.getBeanClass());
     }
 
 
@@ -51,7 +51,7 @@ extends AbstractSpringTestcase
         processWar(WarNames.SPRING_ROOT_DISP_2);
 
         SpringDestination dest = (SpringDestination)pathRepo.get("/foo", HttpMethod.GET);
-        assertEquals("com.kdgregory.pathfinder.test.spring3.ControllerA", dest.getClassName());
+        assertEquals("com.kdgregory.pathfinder.test.spring3.ControllerA", dest.getBeanClass());
     }
 
 }

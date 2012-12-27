@@ -24,6 +24,7 @@ import org.w3c.dom.Element;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
+import org.apache.bcel.classfile.JavaClass;
 import org.apache.commons.io.IOUtils;
 
 import net.sf.kdgcommons.io.IOUtil;
@@ -159,22 +160,25 @@ public class TestWarMachine
 
 
     @Test
-    public void testGetClassfilesInPackage() throws Exception
+    public void testGetClassesInPackage() throws Exception
     {
+        // note: this test might need to be updated if we use a later version
+        //       of PracticalXml (if it adds classes to searched packages)
+
         WarMachine machine = TestHelpers.createWarMachine(WarNames.SERVLET);
 
-        Set<String> files1 = machine.getClassfilesInPackage("com.example.servlet", false);
-        assertEquals("number of files, in WEB-INF, non-recursive",  1, files1.size());
-        assertTrue("searching for file, in WEB-INF, non-recursive", files1.contains("com/example/servlet/SomeServlet.class"));
+        Set<String> clist1 = machine.getClassesInPackage("com.example.servlet", false);
+        assertEquals("number of classes in WEB-INF, non-recursive",  1, clist1.size());
+        assertTrue("searching for file in WEB-INF, non-recursive", clist1.contains("com.example.servlet.SomeServlet"));
 
-        Set<String> files2 = machine.getClassfilesInPackage("net.sf.practicalxml.xpath", false);
-        assertEquals("number of files, in JAR, non-recursive",  13, files2.size());
-        assertTrue("searching for file, in JAR, non-recursive", files2.contains("net/sf/practicalxml/xpath/XPathWrapper.class"));
+        Set<String> clist2 = machine.getClassesInPackage("net.sf.practicalxml.xpath", false);
+        assertEquals("number of classes in JAR, non-recursive",  13, clist2.size());
+        assertTrue("searching for classes in JAR, non-recursive", clist2.contains("net.sf.practicalxml.xpath.XPathWrapper"));
 
-        Set<String> files3 = machine.getClassfilesInPackage("net.sf.practicalxml.xpath", true);
-        assertEquals("number of files, in JAR, recursive",  17, files3.size());
-        assertTrue("searching for file, in JAR, recursive", files3.contains("net/sf/practicalxml/xpath/XPathWrapper.class"));
-        assertTrue("searching for file, in JAR, recursive", files3.contains("net/sf/practicalxml/xpath/function/Constants.class"));
+        Set<String> clist3 = machine.getClassesInPackage("net.sf.practicalxml.xpath", true);
+        assertEquals("number of classes in JAR, recursive",  17, clist3.size());
+        assertTrue("searching for classes in JAR, recursive", clist3.contains("net.sf.practicalxml.xpath.XPathWrapper"));
+        assertTrue("searching for classes in JAR, recursive", clist3.contains("net.sf.practicalxml.xpath.function.Constants"));
     }
 
 
@@ -218,7 +222,7 @@ public class TestWarMachine
         //         note: relative filename
 
         InputStream in1 = machine.openClasspathFile("com/example/servlet/SomeServlet.class");
-        assertNotNull("able to open classfile under WEB-INF/classes", in1);
+        assertNotNull("able to open classfile in WEB-INF/classes", in1);
         assertClassFile("servlet class", in1);
 
         // test 2: a classfile that lives in an included JAR (using absolute filename)
@@ -232,5 +236,28 @@ public class TestWarMachine
         InputStream in3 = machine.openClasspathFile("web.xml");
         assertNull("shouldn't be able to open file not on classpath", in3);
     }
+
+
+    @Test
+    public void testLoadClass() throws Exception
+    {
+        WarMachine machine = TestHelpers.createWarMachine(WarNames.SERVLET);
+
+        JavaClass c1 = machine.loadClass("com.example.servlet.SomeServlet");
+        assertNotNull("found class in WEB-INF/classes", c1);
+        assertEquals("name-check class in WEB-INF/classes",
+                     "com.example.servlet.SomeServlet",
+                     c1.getClassName());
+
+        JavaClass c2 = machine.loadClass("net.sf.practicalxml.DomUtil");
+        assertNotNull("found class in enclosed JAR", c2);
+        assertEquals("name-check class in enclosed JAR",
+                     "net.sf.practicalxml.DomUtil",
+                     c2.getClassName());
+
+        JavaClass c3 = machine.loadClass("java.lang.String");
+        assertNull("class that shouldn't be in WAR", c3);
+    }
+
 
 }

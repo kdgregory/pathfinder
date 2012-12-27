@@ -29,6 +29,7 @@ public abstract class AbstractSpringTestcase
     protected static WarMachine machine;
     protected PathRepo pathRepo;
 
+
 //----------------------------------------------------------------------------
 //  Support code
 //----------------------------------------------------------------------------

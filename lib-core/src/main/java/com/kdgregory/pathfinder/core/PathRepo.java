@@ -25,13 +25,21 @@ import java.util.Map;
  *  <p>
  *  The storage mechanism is a map-of-maps, with the URL as outer key. Inspectors
  *  are allowed (and expected) to completely replace the destinations that belong
- *  to a particular URL. Both maps are sorted, to result in consisted output.
+ *  to a particular URL. Inner and outer maps are sorted, to result in consisted
+ *  output.
  *  <p>
  *  This class is not intended for use by concurrent threads.
  */
 public interface PathRepo
 extends Iterable<String>
 {
+    /**
+     *  Returns the number of URLs in the repository. Note that multiple actions
+     *  for the same URL are only counted once.
+     */
+    public int urlCount();
+
+
     /**
      *  Stores a destination that responds to all request methods. Will replace
      *  all existing destinations for the URL.
@@ -85,7 +93,8 @@ extends Iterable<String>
 
     /**
      *  Returns an iterator over the URLs in this repository. These URLs
-     *  will be sorted in alphanumeric order.
+     *  will be sorted in alphanumeric order. Only those URLs that have active
+     *  mappings are returned.
      */
     @Override
     public Iterator<String> iterator();

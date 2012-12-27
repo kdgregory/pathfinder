@@ -104,12 +104,14 @@
             <modules>
                 <module>testdata-servlet</module>
                 <module>testdata-servlet25</module>
-                <module>testdata-spring-split</module>
+                <module>testdata-spring-simple</module>
+                <module>testdata-spring-beanname</module>
+                <module>testdata-spring-classname</module>
+                <module>testdata-spring-anno</module>
                 <module>testdata-spring-default</module>
-                <module>testdata-spring2-simple</module>
-                <module>testdata-spring3-basic</module>
                 <module>testdata-spring-dispatch-1</module>
                 <module>testdata-spring-dispatch-2</module>
+                <module>testdata-spring-split</module>
                 <module>testdata</module>
             </modules>
         </profile>

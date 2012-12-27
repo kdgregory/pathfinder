@@ -14,8 +14,10 @@
 
 package com.kdgregory.pathfinder.core.impl;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.SortedMap;
 import java.util.TreeMap;
@@ -120,7 +122,26 @@ implements PathRepo
     @Override
     public Iterator<String> iterator()
     {
-        return Collections.unmodifiableMap(urlMap).keySet().iterator();
+        List<String> urls = new ArrayList<String>(urlMap.size());
+        for (Map.Entry<String,SortedMap<HttpMethod,Destination>> entry : urlMap.entrySet())
+        {
+            if (entry.getValue().size() > 0)
+                urls.add(entry.getKey());
+        }
+        return urls.iterator();
+    }
+
+
+    @Override
+    public int urlCount()
+    {
+        int count = 0;
+        for (Map.Entry<String,SortedMap<HttpMethod,Destination>> entry : urlMap.entrySet())
+        {
+            count += (entry.getValue().size() > 0) ? 1 : 0;
+        }
+
+        return count;
     }
 
 

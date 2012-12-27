@@ -36,6 +36,8 @@ import org.w3c.dom.Element;
 
 import org.xml.sax.InputSource;
 
+import org.apache.bcel.classfile.ClassParser;
+import org.apache.bcel.classfile.JavaClass;
 import org.apache.log4j.Logger;
 
 import net.sf.kdgcommons.collections.CollectionUtil;
@@ -235,14 +237,14 @@ implements WarMachine
 
 
     @Override
-    public Set<String> getClassfilesInPackage(String packageName, boolean recurse)
+    public Set<String> getClassesInPackage(String packageName, boolean recurse)
     {
-        packageName = packageName.replace('.', '/');
         Set<String> result = new HashSet<String>();
         lazyBuildClasspath();
 
         // because the classpath map is sorted, we can efficiently start looking in
         // the middle, and exit as soon as the condition doesn't apply
+        packageName = packageName.replace('.', '/');
         for (String filename : filesOnClasspath.tailMap(packageName).keySet())
         {
             if (!filename.endsWith(".class"))
@@ -253,7 +255,11 @@ implements WarMachine
                 break;
 
             if (filePackage.equals(packageName) || recurse)
-                result.add(filename);
+            {
+                String className = StringUtil.extractLeftOfLast(filename, ".class")
+                                   .replace("/", ".");
+                result.add(className);
+            }
         }
 
         return result;
@@ -308,6 +314,29 @@ implements WarMachine
         }
 
         throw new UnreachableCodeException("file was found during classpath scan, but not on retrieval");
+    }
+
+
+    @Override
+    public JavaClass loadClass(String classname)
+    {
+        String filename = classname.replace(".", "/") + ".class";
+        InputStream in = null;
+        try
+        {
+            in = openClasspathFile(filename);
+            return (in == null)
+                 ? null
+                 : new ClassParser(in, classname).parse();
+        }
+        catch (IOException ex)
+        {
+            throw new RuntimeException("unable to load class", ex);
+        }
+        finally
+        {
+            IOUtil.closeQuietly(in);
+        }
     }
 
 

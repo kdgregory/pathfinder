@@ -27,16 +27,14 @@ import net.sf.practicalxml.xpath.XPathWrapperFactory;
 
 
 /**
- *  Holds information extracted from the bean definition. The amount of
- *  information available depends on how the bean was defined: wehether
- *  by XML or a component scan. All beans will have at least name and
- *  class.
+ *  Holds information extracted from an XML bean definition.
  */
 public class BeanDefinition
 {
     // this factory is shared with all other definitions from the context
     private XPathWrapperFactory xpfact;
 
+    private String beanId;
     private String beanName;
     private String beanClass;
     private Element beanDef;
@@ -49,15 +47,27 @@ public class BeanDefinition
     public BeanDefinition(XPathWrapperFactory xpf, Element def)
     {
         xpfact = xpf;
-        beanName = def.getAttribute("id").trim();
+        beanId = def.getAttribute("id").trim();
+        beanName = def.getAttribute("name").trim();
+        if (StringUtil.isEmpty(beanName))
+            beanName = beanId;
         beanClass = def.getAttribute("class").trim();
         beanDef = def;
     }
 
 
     /**
-     *  Returns the name of this bean: the <code>id</code> attribute for
-     *  XML-configured beans, ?? for annotation-configured beans.
+     *  Returns the ID of this bean.
+     */
+    public String getBeanId()
+    {
+        return beanId;
+    }
+
+
+    /**
+     *  Returns the name of this bean. Default to the ID if the name is not
+     *  specified.
      */
     public String getBeanName()
     {
@@ -138,7 +148,7 @@ public class BeanDefinition
     @Override
     public String toString()
     {
-        return getClass().getSimpleName() + "[id=" + getBeanName() + ", class=" + getBeanClass() + "]";
+        return getClass().getSimpleName() + "[id=" + getBeanId() + ", class=" + getBeanClass() + "]";
     }
 
 

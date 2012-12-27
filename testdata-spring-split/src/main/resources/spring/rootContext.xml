@@ -10,8 +10,6 @@
     <!-- the root context is for non-web application beans, but we need to -->
     <!-- verify that we get all controllers, so one lives here             -->
 
-    <bean id="simpleControllerC"
-          class="com.kdgregory.pathfinder.test.spring2.SimpleControllerC">
-    </bean>
+    <bean id="controllerC" class="com.kdgregory.pathfinder.test.spring2.ControllerC"/>
 
 </beans>

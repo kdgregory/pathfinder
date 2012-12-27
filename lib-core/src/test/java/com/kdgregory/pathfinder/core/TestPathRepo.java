@@ -255,4 +255,44 @@ public class TestPathRepo
         assertEquals(URL_1, urlItx.next());
         assertFalse(urlItx.hasNext());
     }
+
+
+    @Test
+    public void testIteratorAfterRemoval() throws Exception
+    {
+        PathRepoImpl repo = new PathRepoImpl();
+        repo.put(URL_1, DEST_1);
+        repo.put(URL_2, HttpMethod.GET, DEST_1);
+        repo.put(URL_3, HttpMethod.POST, DEST_1);
+        repo.remove(URL_2, HttpMethod.GET);
+
+        Iterator<String> urlItx = repo.iterator();
+        assertEquals(URL_3, urlItx.next());
+        assertEquals(URL_1, urlItx.next());
+        assertFalse(urlItx.hasNext());
+    }
+
+
+    @Test
+    public void testUrlCount() throws Exception
+    {
+        PathRepo repo = new PathRepoImpl();
+
+        repo.put(URL_1, DEST_1);
+        assertEquals("after first add", 1, repo.urlCount());
+
+        repo.put(URL_2, HttpMethod.GET, DEST_2);
+        repo.put(URL_2, HttpMethod.POST, DEST_2);
+        assertEquals("same URL, multiple methods", 2, repo.urlCount());
+
+        repo.put(URL_3, HttpMethod.ALL, DEST_2);
+        assertEquals("added \"all\" mapping", 3, repo.urlCount());
+
+        repo.remove(URL_3, HttpMethod.POST);
+        assertEquals("removed one method from \"all\" mapping", 3, repo.urlCount());
+
+        repo.remove(URL_2, HttpMethod.ALL);
+        assertEquals("removed entire mapping", 2, repo.urlCount());
+    }
+
 }

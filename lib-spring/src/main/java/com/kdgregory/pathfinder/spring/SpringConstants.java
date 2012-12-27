@@ -23,6 +23,9 @@ public class SpringConstants
     public final static String DISPATCHER_SERVLET_CLASS     = "org.springframework.web.servlet.DispatcherServlet";
     public final static String CONTEXT_LISTENER_CLASS       = "org.springframework.web.context.ContextLoaderListener";
     public final static String SIMPLE_URL_HANDLER_CLASS     = "org.springframework.web.servlet.handler.SimpleUrlHandlerMapping";
+    public final static String BEAN_NAME_HANDLER_CLASS      = "org.springframework.web.servlet.handler.BeanNameUrlHandlerMapping";
+    public final static String CLASS_NAME_HANDLER_CLASS     = "org.springframework.web.servlet.mvc.support.ControllerClassNameHandlerMapping";
+    public final static String CONTROLLER_INTERFACE         = "org.springframework.web.servlet.mvc.Controller";
     public final static String CONTROLLER_ANNO_CLASS        = "org.springframework.stereotype.Controller";
     public final static String REQUEST_MAPPING_ANNO_CLASS   = "org.springframework.web.bind.annotation.RequestMapping";
 }

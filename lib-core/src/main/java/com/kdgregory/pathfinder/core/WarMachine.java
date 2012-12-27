@@ -22,6 +22,8 @@ import java.util.Set;
 
 import org.w3c.dom.Document;
 
+import org.apache.bcel.classfile.JavaClass;
+
 import net.sf.practicalxml.xpath.XPathWrapper;
 
 
@@ -43,8 +45,8 @@ public interface WarMachine
      *  from this DOM.
      */
     public Document getWebXml();
-    
-    
+
+
     /**
      *  Returns an XPath that may be used to retrieve content from this WAR's
      *  <code>web.xml</code>. Elements within the file must be prefixed with
@@ -91,20 +93,10 @@ public interface WarMachine
 
 
     /**
-     *  Returns a list of the files on the classpath that are found within the
-     *  specified package, and which end in ".class". Optionally recurses into
-     *  descendent packages.
-     *
-     *  @param packageName      Name of a single package.
-     *  @param annotationName   Fully-qualified classname of the annotation (eg:
-     *                          <code>java.lang.annotation.Documented</code>).
-     *                          Be sure to omit the "@".
-     *  @param recurse          If <code>true</code>, this method wil examine the
-     *                          specified package and all its decendents. If
-     *                          <code>false</code>, the search is limited to the
-     *                          package.
+     *  Searches the classpath for classes in a given package, optionally recursing
+     *  into descendent packages.
      */
-    public Set<String> getClassfilesInPackage(String packageName, boolean recurse);
+    public Set<String> getClassesInPackage(String packageName, boolean recurse);
 
 
     /**
@@ -122,6 +114,13 @@ public interface WarMachine
      */
     public InputStream openClasspathFile(String filename)
     throws IOException;
+
+
+    /**
+     *  Attempts to find the specified class on the classpath, and loads it
+     *  using BCEL. Returns <code>null</code> if unable to find the classfile.
+     */
+    public JavaClass loadClass(String classname);
 
 
 
