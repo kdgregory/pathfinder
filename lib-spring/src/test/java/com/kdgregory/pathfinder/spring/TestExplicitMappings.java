@@ -24,7 +24,7 @@ import com.kdgregory.pathfinder.test.WarNames;
 /**
  *  This test looks for explicitly configured URL mappings.
  */
-public class TestSpring2
+public class TestExplicitMappings
 extends AbstractSpringTestcase
 {
     @Test
@@ -46,11 +46,11 @@ extends AbstractSpringTestcase
         processWar(WarNames.SPRING_SIMPLE);
 
         SpringDestination dest1 = (SpringDestination)pathRepo.get("/servlet/foo", HttpMethod.GET);
-        assertEquals("controllerA", dest1.getBeanName());
+        assertEquals("controllerA", dest1.getBeanId());
         assertEquals("com.kdgregory.pathfinder.test.spring2.ControllerA", dest1.getBeanClass());
 
         SpringDestination dest2 = (SpringDestination)pathRepo.get("/servlet/bar", HttpMethod.GET);
-        assertEquals("controllerB", dest2.getBeanName());
+        assertEquals("controllerB", dest2.getBeanId());
         assertEquals("com.kdgregory.pathfinder.test.spring2.ControllerB", dest2.getBeanClass());
     }
 
@@ -64,11 +64,11 @@ extends AbstractSpringTestcase
         assertEquals("number of mapped URLs", 3, pathRepo.urlCount());
 
         SpringDestination dest1 = (SpringDestination)pathRepo.get("/servlet/foo", HttpMethod.GET);
-        assertEquals("controllerA", dest1.getBeanName());
+        assertEquals("controllerA", dest1.getBeanId());
         assertEquals("com.kdgregory.pathfinder.test.spring2.ControllerA", dest1.getBeanClass());
 
         SpringDestination dest2 = (SpringDestination)pathRepo.get("/servlet/bar", HttpMethod.GET);
-        assertEquals("controllerB", dest2.getBeanName());
+        assertEquals("controllerB", dest2.getBeanId());
         assertEquals("com.kdgregory.pathfinder.test.spring2.ControllerB", dest2.getBeanClass());
     }
 
@@ -82,11 +82,11 @@ extends AbstractSpringTestcase
         assertEquals("number of mapped URLs", 3, pathRepo.urlCount());
 
         SpringDestination dest1 = (SpringDestination)pathRepo.get("/servlet/test/foo", HttpMethod.GET);
-        assertEquals("controllerA", dest1.getBeanName());
+        assertEquals("controllerA", dest1.getBeanId());
         assertEquals("com.kdgregory.pathfinder.test.spring2.FooController", dest1.getBeanClass());
 
         SpringDestination dest2 = (SpringDestination)pathRepo.get("/servlet/test/bar", HttpMethod.GET);
-        assertEquals("controllerB", dest2.getBeanName());
+        assertEquals("controllerB", dest2.getBeanId());
         assertEquals("com.kdgregory.pathfinder.test.spring2.BarController", dest2.getBeanClass());
     }
 }

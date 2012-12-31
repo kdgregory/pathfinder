@@ -25,10 +25,11 @@ import net.sf.kdgcommons.lang.StringUtil;
 
 import com.kdgregory.pathfinder.core.PathRepo;
 import com.kdgregory.pathfinder.core.WarMachine;
+import com.kdgregory.pathfinder.spring.BeanDefinition.DefinitionType;
 
 
 /**
- *  This class contains the logic for inspecting beans defined in XML.
+ *  This class extracts mappings defined in XML configuration.
  */
 public class BeanInspector
 {
@@ -67,11 +68,19 @@ public class BeanInspector
 
     private void processSimpleUrlHandlerMappings(String urlPrefix)
     {
-        List<BeanDefinition> defs = context.getBeansByClass(SpringConstants.SIMPLE_URL_HANDLER_CLASS);
+        List<BeanDefinition> defs = context.getBeansByClass(SpringConstants.CLASS_SIMPLE_URL_HANDLER);
         logger.debug("found " + defs.size() + " SimpleUrlHandlerMapping beans");
 
-        for (BeanDefinition def : defs)
+        for (BeanDefinition def0 : defs)
         {
+            if (def0.getDefinitionType() != DefinitionType.XML)
+            {
+                logger.warn("SimpleUrlHandlerMapping bean " + def0.getBeanId() + " found by scan; "
+                            + "ignoring because we can't extract mappings without loading it");
+                continue;
+            }
+
+            XmlBeanDefinition def = (XmlBeanDefinition)def0;
             Properties mappings = def.getPropertyAsProperties("mappings");
             if ((mappings == null) || mappings.isEmpty())
             {
@@ -94,13 +103,20 @@ public class BeanInspector
 
     private void processClassNameHandlerMappings(String urlPrefix)
     {
-        List<BeanDefinition> mappers = context.getBeansByClass(SpringConstants.CLASS_NAME_HANDLER_CLASS);
+        List<BeanDefinition> mappers = context.getBeansByClass(SpringConstants.CLASS_CLASS_NAME_HANDLER);
         if (mappers.size() == 0)
             return;
 
+        BeanDefinition mapper0 = mappers.get(0);
+        if ( mapper0.getDefinitionType() != DefinitionType.XML)
+        {
+            logger.warn("found ControllerClassNameHandlerMapping as scanned bean; ignoring");
+            return;
+        }
+
         logger.debug("found ControllerClassNameHandlerMapping; scanning for beans");
 
-        BeanDefinition mapper = mappers.get(0);
+        XmlBeanDefinition mapper = (XmlBeanDefinition)mapper0;
         String mapperPrefix = mapper.getPropertyAsString("pathPrefix");
         if (! StringUtil.isBlank(mapperPrefix))
         {
@@ -134,7 +150,7 @@ public class BeanInspector
     //          whether it should act even if no explicit mapping bean defined
     private void processBeanNameHandlerMappings(String urlPrefix)
     {
-        List<BeanDefinition> beans = context.getBeansByClass(SpringConstants.BEAN_NAME_HANDLER_CLASS);
+        List<BeanDefinition> beans = context.getBeansByClass(SpringConstants.CLASS_BEAN_NAME_HANDLER);
         if (beans.size() == 0)
         {
             logger.debug("did not find BeanNameUrlHandlerMapping");
@@ -177,7 +193,7 @@ public class BeanInspector
             JavaClass klass = war.loadClass(className);
             for (String intf : klass.getInterfaceNames())
             {
-                if (intf.equals(SpringConstants.CONTROLLER_INTERFACE))
+                if (intf.equals(SpringConstants.INTF_CONTROLLER))
                     return true;
             }
             className = klass.getSuperclassName();

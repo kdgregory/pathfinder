@@ -20,12 +20,13 @@ package com.kdgregory.pathfinder.spring;
 
 public class SpringConstants
 {
-    public final static String DISPATCHER_SERVLET_CLASS     = "org.springframework.web.servlet.DispatcherServlet";
-    public final static String CONTEXT_LISTENER_CLASS       = "org.springframework.web.context.ContextLoaderListener";
-    public final static String SIMPLE_URL_HANDLER_CLASS     = "org.springframework.web.servlet.handler.SimpleUrlHandlerMapping";
-    public final static String BEAN_NAME_HANDLER_CLASS      = "org.springframework.web.servlet.handler.BeanNameUrlHandlerMapping";
-    public final static String CLASS_NAME_HANDLER_CLASS     = "org.springframework.web.servlet.mvc.support.ControllerClassNameHandlerMapping";
-    public final static String CONTROLLER_INTERFACE         = "org.springframework.web.servlet.mvc.Controller";
-    public final static String CONTROLLER_ANNO_CLASS        = "org.springframework.stereotype.Controller";
-    public final static String REQUEST_MAPPING_ANNO_CLASS   = "org.springframework.web.bind.annotation.RequestMapping";
+    public final static String CLASS_DISPATCHER_SERVLET     = "org.springframework.web.servlet.DispatcherServlet";
+    public final static String CLASS_CONTEXT_LISTENER       = "org.springframework.web.context.ContextLoaderListener";
+    public final static String CLASS_SIMPLE_URL_HANDLER     = "org.springframework.web.servlet.handler.SimpleUrlHandlerMapping";
+    public final static String CLASS_BEAN_NAME_HANDLER      = "org.springframework.web.servlet.handler.BeanNameUrlHandlerMapping";
+    public final static String CLASS_CLASS_NAME_HANDLER     = "org.springframework.web.servlet.mvc.support.ControllerClassNameHandlerMapping";
+    public final static String INTF_CONTROLLER              = "org.springframework.web.servlet.mvc.Controller";
+    public final static String ANNO_CONTROLLER              = "org.springframework.stereotype.Controller";
+    public final static String ANNO_COMPONENT               = "org.springframework.stereotype.Component";
+    public final static String ANNO_REQUEST_MAPPING         = "org.springframework.web.bind.annotation.RequestMapping";
 }

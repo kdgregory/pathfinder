@@ -82,7 +82,7 @@ implements Inspector
         List<String> listeners = war.getWebXmlPath("/j2ee:web-app/j2ee:listener/j2ee:listener-class")
                                  .evaluateAsStringList(war.getWebXml());
         Set<String> listeners2 = new HashSet<String>(listeners);
-        if (!listeners2.contains(SpringConstants.CONTEXT_LISTENER_CLASS))
+        if (!listeners2.contains(SpringConstants.CLASS_CONTEXT_LISTENER))
         {
             logger.debug("no root context listener found");
             return null;
@@ -111,7 +111,7 @@ implements Inspector
         List<ServletMapping> result = new ArrayList<ServletMapping>();
         for (ServletMapping servlet : war.getServletMappings())
         {
-            if (servlet.getServletClass().equals(SpringConstants.DISPATCHER_SERVLET_CLASS))
+            if (servlet.getServletClass().equals(SpringConstants.CLASS_DISPATCHER_SERVLET))
             {
                 result.add(servlet);
                 paths.remove(servlet.getUrlPattern(), HttpMethod.ALL);

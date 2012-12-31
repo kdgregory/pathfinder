@@ -12,22 +12,21 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package com.kdgregory.pathfinder.core.impl;
+package com.kdgregory.pathfinder.util;
 
-import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-import java.util.TreeSet;
+import java.util.TreeMap;
+
+import org.apache.bcel.classfile.JavaClass;
 
 import net.sf.kdgcommons.lang.StringUtil;
 
 import com.kdgregory.bcelx.classfile.Annotation;
 import com.kdgregory.bcelx.parser.AnnotationParser;
-import com.kdgregory.pathfinder.core.ClasspathScanner;
 import com.kdgregory.pathfinder.core.WarMachine;
 
 
@@ -36,19 +35,16 @@ import com.kdgregory.pathfinder.core.WarMachine;
  *  more filters to the classes found there. An unconfigured instance (one
  *  without filters) returns all classes on the classpath.
  */
-public class ClasspathScannerImpl
-implements ClasspathScanner
+public class ClasspathScanner
 {
     private Map<String,Boolean> basePackages;   // packageName -> recurse
     private Set<String> includedAnnotations;
-
 
 //----------------------------------------------------------------------------
 //  ClasspathScanner
 //----------------------------------------------------------------------------
 
-    @Override
-    public ClasspathScannerImpl addBasePackage(String packageName, boolean includeSubPackages)
+    public ClasspathScanner addBasePackage(String packageName, boolean includeSubPackages)
     {
         if (basePackages == null)
             basePackages = new HashMap<String,Boolean>();
@@ -58,56 +54,42 @@ implements ClasspathScanner
     }
 
 
-    @Override
-    public ClasspathScannerImpl addBasePackage(String packageName)
+    public ClasspathScanner addBasePackage(String packageName)
     {
         return addBasePackage(packageName, true);
     }
 
 
-    @Override
-    public ClasspathScannerImpl addBasePackages(Collection<String> packageNames, boolean includeSubPackages)
+    public ClasspathScanner addIncludedAnnotation(String annotationClass)
     {
-        for (String packageName : packageNames)
-        {
-            addBasePackage(packageName, includeSubPackages);
-        }
+        if (includedAnnotations == null)
+            includedAnnotations = new HashSet<String>();
+
+        includedAnnotations.add(annotationClass);
         return this;
     }
 
 
-    @Override
-    public ClasspathScannerImpl setIncludedAnnotations(String... annotationClasses)
+    public Map<String,AnnotationParser> scan(WarMachine war)
     {
-        includedAnnotations = new HashSet<String>();
-        includedAnnotations.addAll(Arrays.asList(annotationClasses));
-        return this;
-    }
+        // a TreeMap is easier for debugging: all scanned classes are in order
+        Map<String,AnnotationParser> result = new TreeMap<String,AnnotationParser>();
 
-
-    @Override
-    public Set<String> scan(WarMachine war)
-    {
-        return scan(war, new HashMap<String,AnnotationParser>());
-    }
-
-
-    @Override
-    public Set<String> scan(WarMachine war, Map<String,AnnotationParser> parseResults)
-    {
-        // returns a TreeSet to simplify debugging; it's not part of the contract
-        Set<String> result = new TreeSet<String>();
         for (String fileName :  war.getFilesOnClasspath())
         {
             if (! fileName.endsWith(".class"))
                 continue;
 
             String className = StringUtil.extractLeftOfLast(fileName, ".class").replace("/", ".");
-            boolean include = applyBasePackageFilter(className)
-                           && applyIncludedAnnotationFilter(war, className, parseResults);
+            if (! applyBasePackageFilter(className))
+                continue;
 
-            if (include)
-                result.add(className);
+            JavaClass klass = war.loadClass(className);
+            AnnotationParser ap = new AnnotationParser(klass);
+            if (! applyIncludedAnnotationFilter(ap))
+                continue;
+
+            result.put(className, ap);
         }
         return result;
     }
@@ -158,32 +140,18 @@ implements ClasspathScanner
     }
 
 
-    private boolean applyIncludedAnnotationFilter(WarMachine war, String className, Map<String,AnnotationParser> parseResults)
+    private boolean applyIncludedAnnotationFilter(AnnotationParser ap)
     {
         if (includedAnnotations == null)
             return true;
 
-        try
+        for (Annotation anno : ap.getClassVisibleAnnotations())
         {
-            AnnotationParser ap = new AnnotationParser(war.loadClass(className));
-            for (Annotation anno : ap.getClassVisibleAnnotations())
-            {
-                if (includedAnnotations.contains(anno.getClassName()))
-                {
-                    parseResults.put(className, ap);
-                    return true;
-                }
-            }
-            return false;
+            String annoClass = anno.getClassName();
+            if (includedAnnotations.contains(annoClass))
+                return true;
         }
-        catch (Exception ex)
-        {
-            throw new RuntimeException("unable to parse class file: " + className, ex);
-        }
+
+        return false;
     }
-
-//----------------------------------------------------------------------------
-//  Other Intenals
-//----------------------------------------------------------------------------
-
 }

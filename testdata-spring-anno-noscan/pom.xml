@@ -8,14 +8,10 @@
         <version>1.0-SNAPSHOT</version>
     </parent>
 
-    <artifactId>pathfinder-testdata-spring-split</artifactId>
+    <artifactId>pathfinder-testdata-spring-anno-noscan</artifactId>
     <packaging>war</packaging>
 
-    <name>WAR for Spring Testing With Multiple Context Files</name>
-    <description>
-        A rewriting of the "simple" WAR, that moves some pieces of the config
-        into a root config, and imports others
-    </description>
+    <name>WAR for Spring Annotation-Driven Testing sans Classpath Scan</name>
 
     <dependencies>
         <dependency>

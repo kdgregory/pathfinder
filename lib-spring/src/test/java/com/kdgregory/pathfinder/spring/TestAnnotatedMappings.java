@@ -30,7 +30,7 @@ import com.kdgregory.pathfinder.test.WarNames;
  *  exploring a different facet of the WAR (and reflecting the incremental
  *  implementation process).
  */
-public class TestSpring3
+public class TestAnnotatedMappings
 extends AbstractSpringTestcase
 {
 
@@ -41,7 +41,7 @@ extends AbstractSpringTestcase
 
         SpringDestination dest = (SpringDestination)pathRepo.get("/servlet/foo.html", HttpMethod.GET);
         assertNotNull("mapping exists", dest);
-        assertEquals("bean",    "myController", dest.getBeanName());
+        assertEquals("bean",    "myController", dest.getBeanId());
         assertEquals("class",   "com.kdgregory.pathfinder.test.spring3.pkg1.ControllerA", dest.getBeanClass());
         assertEquals("method",  "getFoo", dest.getMethodName());
         assertEquals("toString","com.kdgregory.pathfinder.test.spring3.pkg1.ControllerA.getFoo()", dest.toString());
@@ -55,14 +55,14 @@ extends AbstractSpringTestcase
 
         SpringDestination dest1 = (SpringDestination)pathRepo.get("/servlet/B/bar.html", HttpMethod.GET);
         assertNotNull("GET mapping exists", dest1);
-        assertEquals("GET bean",    "controllerB", dest1.getBeanName());
+        assertEquals("GET bean",    "controllerB", dest1.getBeanId());
         assertEquals("GET class",   "com.kdgregory.pathfinder.test.spring3.pkg2.ControllerB", dest1.getBeanClass());
         assertEquals("GET method",  "getBar", dest1.getMethodName());
         assertEquals("toString","com.kdgregory.pathfinder.test.spring3.pkg2.ControllerB.getBar()", dest1.toString());
 
         SpringDestination dest2 = (SpringDestination)pathRepo.get("/servlet/B/baz.html", HttpMethod.POST);
         assertNotNull("POST mapping exists", dest2);
-        assertEquals("POST bean",   "controllerB", dest2.getBeanName());
+        assertEquals("POST bean",   "controllerB", dest2.getBeanId());
         assertEquals("POST class",  "com.kdgregory.pathfinder.test.spring3.pkg2.ControllerB", dest2.getBeanClass());
         assertEquals("POST method", "setBaz", dest2.getMethodName());
         assertEquals("toString","com.kdgregory.pathfinder.test.spring3.pkg2.ControllerB.setBaz()", dest2.toString());
@@ -76,7 +76,7 @@ extends AbstractSpringTestcase
 
         SpringDestination dest1 = (SpringDestination)pathRepo.get("/servlet/C", HttpMethod.GET);
         assertNotNull("mapping exists", dest1);
-        assertEquals("bean",    "controllerC", dest1.getBeanName());
+        assertEquals("bean",    "controllerC", dest1.getBeanId());
         assertEquals("class",   "com.kdgregory.pathfinder.test.spring3.pkg2.ControllerC", dest1.getBeanClass());
         assertEquals("method",  "getC", dest1.getMethodName());
         assertEquals("toString","com.kdgregory.pathfinder.test.spring3.pkg2.ControllerC.getC()", dest1.toString());
@@ -90,7 +90,7 @@ extends AbstractSpringTestcase
 
         SpringDestination est = (SpringDestination)pathRepo.get("/servlet/D/{id}", HttpMethod.GET);
         assertNotNull("mapping exists", est);
-        assertEquals("bean",    "controllerD", est.getBeanName());
+        assertEquals("bean",    "controllerD", est.getBeanId());
         assertEquals("class",   "com.kdgregory.pathfinder.test.spring3.pkg2.ControllerD", est.getBeanClass());
         assertEquals("method",  "getD", est.getMethodName());
         assertEquals("toString","com.kdgregory.pathfinder.test.spring3.pkg2.ControllerD.getD()", est.toString());
@@ -105,16 +105,16 @@ extends AbstractSpringTestcase
         // verify that we add all variants when method isn't specified
 
         SpringDestination dest1a = (SpringDestination)pathRepo.get("/servlet/foo.html", HttpMethod.GET);
-        assertEquals("foo.html GET", "myController", dest1a.getBeanName());
+        assertEquals("foo.html GET", "myController", dest1a.getBeanId());
 
         SpringDestination dest1b = (SpringDestination)pathRepo.get("/servlet/foo.html", HttpMethod.POST);
-        assertEquals("foo.html POST", "myController", dest1b.getBeanName());
+        assertEquals("foo.html POST", "myController", dest1b.getBeanId());
 
         SpringDestination dest1c = (SpringDestination)pathRepo.get("/servlet/foo.html", HttpMethod.PUT);
-        assertEquals("foo.html PUT", "myController", dest1c.getBeanName());
+        assertEquals("foo.html PUT", "myController", dest1c.getBeanId());
 
         SpringDestination dest1d = (SpringDestination)pathRepo.get("/servlet/foo.html", HttpMethod.DELETE);
-        assertEquals("foo.html DELETE", "myController", dest1d.getBeanName());
+        assertEquals("foo.html DELETE", "myController", dest1d.getBeanId());
 
         // and that we don't add methods that aren't specified
 
@@ -173,5 +173,19 @@ extends AbstractSpringTestcase
         assertEquals("param type: bargle",  "java.lang.Integer", params.get("bargle").getType());
         assertEquals("default val: bargle", "",                  params.get("bargle").getDefaultValue());
         assertTrue("required: bargle",                           params.get("bargle").isRequired());
+    }
+
+
+    @Test
+    public void testExplicitControllerDefs() throws Exception
+    {
+        processWar(WarNames.SPRING_ANNO_NOSCAN);
+
+        // index.jsp + one controller mapping
+        assertEquals("number of mapped URLs", 2, pathRepo.urlCount());
+
+        SpringDestination dest = (SpringDestination)pathRepo.get("/servlet/B/bar", HttpMethod.GET);
+        assertEquals("controller ID",    "controllerB", dest.getBeanId());
+        assertEquals("controller class", "com.kdgregory.pathfinder.test.spring3.pkg1.ControllerB", dest.getBeanClass());
     }
 }

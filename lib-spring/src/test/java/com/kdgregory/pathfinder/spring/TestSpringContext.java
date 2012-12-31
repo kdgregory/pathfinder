@@ -16,17 +16,13 @@ package com.kdgregory.pathfinder.spring;
 
 import java.util.List;
 import java.util.Properties;
-import java.util.Set;
 
 import org.junit.Test;
-
 import static org.junit.Assert.*;
 
 import org.apache.log4j.Logger;
 
-import com.kdgregory.pathfinder.core.ClasspathScanner;
 import com.kdgregory.pathfinder.core.WarMachine;
-import com.kdgregory.pathfinder.core.impl.ClasspathScannerImpl;
 import com.kdgregory.pathfinder.test.WarNames;
 import com.kdgregory.pathfinder.util.TestHelpers;
 
@@ -45,7 +41,7 @@ public class TestSpringContext
         SpringContext context = new SpringContext(null, "classpath:contexts/simpleContext.xml");
         assertEquals("number of beans defined", 4, context.getBeans().size());
 
-        BeanDefinition b1 = context.getBean("simpleUrlMapping");
+        XmlBeanDefinition b1 = (XmlBeanDefinition)context.getBean("simpleUrlMapping");
         assertNotNull("able to find bean by name", b1);
         assertEquals("bean name set",              "simpleUrlMapping",
                                                    b1.getBeanId());
@@ -81,7 +77,7 @@ public class TestSpringContext
         logger.info("testGetProperty()");
 
         SpringContext context = new SpringContext(null, "classpath:contexts/propContext.xml");
-        BeanDefinition bean = context.getBean("example");
+        XmlBeanDefinition bean = (XmlBeanDefinition)context.getBean("example");
         assertNotNull("able to load context", bean);
 
         assertEquals("extracted property as string in attribute", "foo", bean.getPropertyAsString("propAsStringAttribute"));
@@ -157,52 +153,81 @@ public class TestSpringContext
 
 
     @Test
-    public void testExtractSingleComponentScan() throws Exception
+    public void testComponentScan() throws Exception
     {
-        SpringContext ctx = new SpringContext(null, "classpath:contexts/componentScanSingle.xml");
-        List<ClasspathScanner> scanners = ctx.getComponentScans();
-        assertEquals("number of scanner objects", 1, scanners.size());
+        WarMachine war = TestHelpers.createWarMachine(WarNames.SPRING_SCAN);
+        SpringContext ctx = new SpringContext(war, "/WEB-INF/spring/servletContext.xml");
 
-        ClasspathScannerImpl scanner = (ClasspathScannerImpl)scanners.get(0);
-        assertEquals("base package count", 1, scanner.getBasePackages().size());
-        assertEquals("base package config", Boolean.TRUE, scanner.getBasePackages().get("com.example.pkg1"));
+        // the test WAR has @Service and @Repository beans in the scan path, but these
+        // should be ignored by our scanner
 
-        Set<String> annotationFilter = scanner.getIncludedAnnotations();
-        assertEquals("count of filter annotations", 1, annotationFilter.size());
-        assertTrue("annotations filter includes @Controller", annotationFilter.contains("org.springframework.stereotype.Controller"));
+        assertEquals("number of beans", 4, ctx.getBeans().size());
+        assertEquals("explicit bean",   "org.springframework.web.servlet.view.UrlBasedViewResolver",
+                                        ctx.getBean("viewResolver").getBeanClass());
+        assertEquals("@Component",      "com.kdgregory.pathfinder.test.scan.component.MyComponent",
+                                        ctx.getBean("myComponent").getBeanClass());
+        assertEquals("@Controller #1",  "com.kdgregory.pathfinder.test.scan.controller.ControllerA",
+                                        ctx.getBean("myController").getBeanClass());
+        assertEquals("@Controller #2",  "com.kdgregory.pathfinder.test.scan.controller.ControllerB",
+                                        ctx.getBean("controllerB").getBeanClass());
     }
 
 
     @Test
-    public void testExtractComponentScanWithMultiplePackages() throws Exception
+    public void testComponentScanPartial() throws Exception
     {
-        SpringContext ctx = new SpringContext(null, "classpath:contexts/componentScanSingleWithMultiplePackages.xml");
-        List<ClasspathScanner> scanners = ctx.getComponentScans();
-        assertEquals("number of scanner objects", 1, scanners.size());
+        WarMachine war = TestHelpers.createWarMachine(WarNames.SPRING_SCAN);
+        SpringContext ctx = new SpringContext(war, "/WEB-INF/spring/altContext1.xml");
 
-        ClasspathScannerImpl scanner = (ClasspathScannerImpl)scanners.get(0);
-        assertEquals("base package count", 3, scanner.getBasePackages().size());
-        assertEquals("base package config", Boolean.TRUE, scanner.getBasePackages().get("com.example.pkg1"));
-        assertEquals("base package config", Boolean.TRUE, scanner.getBasePackages().get("com.example.pkg2"));
-        assertEquals("base package config", Boolean.TRUE, scanner.getBasePackages().get("com.example.pkg3"));
+        // this test just looks at the controller package (plus explicit beans)
+
+        assertEquals("number of beans", 3, ctx.getBeans().size());
+        assertEquals("explicit bean",   "org.springframework.web.servlet.view.UrlBasedViewResolver",
+                                        ctx.getBean("viewResolver").getBeanClass());
+        assertEquals("@Controller #1",  "com.kdgregory.pathfinder.test.scan.controller.ControllerA",
+                                        ctx.getBean("myController").getBeanClass());
+        assertEquals("@Controller #2",  "com.kdgregory.pathfinder.test.scan.controller.ControllerB",
+                                        ctx.getBean("controllerB").getBeanClass());
+
     }
 
 
     @Test
-    public void testExtractMultipleComponentScans() throws Exception
+    public void testComponentScanMultiple() throws Exception
     {
-        SpringContext ctx = new SpringContext(null, "classpath:contexts/componentScanMultiple.xml");
-        List<ClasspathScanner> scanners = ctx.getComponentScans();
-        assertEquals("number of scanner objects", 2, scanners.size());
+        WarMachine war = TestHelpers.createWarMachine(WarNames.SPRING_SCAN);
+        SpringContext ctx = new SpringContext(war, "/WEB-INF/spring/altContext2.xml");
 
-        ClasspathScannerImpl scanner1 = (ClasspathScannerImpl)scanners.get(0);
-        assertEquals("scanner1 package count", 1, scanner1.getBasePackages().size());
-        assertEquals("scanner1 package config", Boolean.TRUE, scanner1.getBasePackages().get("com.example.pkg1"));
+        // this test looks at both controller and component packages, so should be same as full scan
 
-        ClasspathScannerImpl scanner2 = (ClasspathScannerImpl)scanners.get(1);
-        assertEquals("scanner2 package count", 3, scanner2.getBasePackages().size());
-        assertEquals("scanner2 package config", Boolean.TRUE, scanner2.getBasePackages().get("com.example.pkg1"));
-        assertEquals("scanner2 package config", Boolean.TRUE, scanner2.getBasePackages().get("com.example.pkg2"));
-        assertEquals("scanner2 package config", Boolean.TRUE, scanner2.getBasePackages().get("com.example.pkg3"));
+        assertEquals("number of beans", 4, ctx.getBeans().size());
+        assertEquals("explicit bean",   "org.springframework.web.servlet.view.UrlBasedViewResolver",
+                                        ctx.getBean("viewResolver").getBeanClass());
+        assertEquals("@Component",      "com.kdgregory.pathfinder.test.scan.component.MyComponent",
+                                        ctx.getBean("myComponent").getBeanClass());
+        assertEquals("@Controller #1",  "com.kdgregory.pathfinder.test.scan.controller.ControllerA",
+                                        ctx.getBean("myController").getBeanClass());
+        assertEquals("@Controller #2",  "com.kdgregory.pathfinder.test.scan.controller.ControllerB",
+                                        ctx.getBean("controllerB").getBeanClass());
+    }
+
+
+    @Test
+    public void testComponentScanMultipleWithOverlap() throws Exception
+    {
+        WarMachine war = TestHelpers.createWarMachine(WarNames.SPRING_SCAN);
+        SpringContext ctx = new SpringContext(war, "/WEB-INF/spring/altContext3.xml");
+
+        // we want to verify that beans are only added once
+
+        assertEquals("number of beans", 4, ctx.getBeans().size());
+        assertEquals("explicit bean",   "org.springframework.web.servlet.view.UrlBasedViewResolver",
+                                        ctx.getBean("viewResolver").getBeanClass());
+        assertEquals("@Component",      "com.kdgregory.pathfinder.test.scan.component.MyComponent",
+                                        ctx.getBean("myComponent").getBeanClass());
+        assertEquals("@Controller #1",  "com.kdgregory.pathfinder.test.scan.controller.ControllerA",
+                                        ctx.getBean("myController").getBeanClass());
+        assertEquals("@Controller #2",  "com.kdgregory.pathfinder.test.scan.controller.ControllerB",
+                                        ctx.getBean("controllerB").getBeanClass());
     }
 }

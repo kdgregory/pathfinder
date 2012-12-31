@@ -37,9 +37,9 @@ import net.sf.practicalxml.ParseUtil;
 import net.sf.practicalxml.xpath.XPathWrapperFactory;
 import net.sf.practicalxml.xpath.XPathWrapperFactory.CacheType;
 
-import com.kdgregory.pathfinder.core.ClasspathScanner;
+import com.kdgregory.bcelx.parser.AnnotationParser;
 import com.kdgregory.pathfinder.core.WarMachine;
-import com.kdgregory.pathfinder.core.impl.ClasspathScannerImpl;
+import com.kdgregory.pathfinder.util.ClasspathScanner;
 
 
 /**
@@ -60,7 +60,6 @@ public class SpringContext
 //----------------------------------------------------------------------------
 
     private SpringContext parent;
-    private Document dom;
     private Map<String,BeanDefinition> beanDefinitions = new HashMap<String,BeanDefinition>();
 
 
@@ -78,9 +77,10 @@ public class SpringContext
     {
         for (String path : decomposeContextLocation(contextLocation))
         {
-            dom = parseContextFile(war, path);
-            processImports(war, path);
-            extractBeanDefinitions(path);
+            Document dom = parseContextFile(war, path);
+            processImports(war, path, dom);
+            extractBeanDefinitions(path, dom);
+            processComponentScans(war, dom);
         }
     }
 
@@ -148,37 +148,6 @@ public class SpringContext
     }
 
 
-    /**
-     *  Finds all <code>&lt;ctx:component-scan&gt;</code> entries and returns
-     *  scanner objects for each. Looks in the current context only, and restricts
-     *  the scan to classes annotated with <code>@Controller</code>.
-     *  <p>
-     *  FIXME - does not support inclusions or exclusions; will need to return
-     *          a list of scanner objects
-     */
-    public List<ClasspathScanner> getComponentScans()
-    {
-        List<Element> scanDefs = xpfact.newXPath("/b:beans/ctx:component-scan")
-                                 .evaluate(dom, Element.class);
-
-        List<ClasspathScanner> result = new ArrayList<ClasspathScanner>(scanDefs.size());
-        for (Element elem : scanDefs)
-        {
-            ClasspathScanner scanner = new ClasspathScannerImpl()
-                                       .setIncludedAnnotations(SpringConstants.CONTROLLER_ANNO_CLASS);
-            String basePackage = elem.getAttribute("base-package");
-            String[] bp2 = basePackage.split(",");
-            for (String pkg : bp2)
-            {
-                scanner.addBasePackage(pkg.trim());
-            }
-            result.add(scanner);
-        }
-
-        return result;
-    }
-
-
 //----------------------------------------------------------------------------
 //  Internals
 //----------------------------------------------------------------------------
@@ -229,7 +198,7 @@ public class SpringContext
     }
 
 
-    private void processImports(WarMachine war, String origFile)
+    private void processImports(WarMachine war, String origFile, Document dom)
     {
         // < ="services.xml"/>
         List<Element> importDefs = xpfact.newXPath("/b:beans/b:import")
@@ -256,20 +225,41 @@ public class SpringContext
     }
 
 
-    private String rebaseIncludedResource(String origFile, String includedFile)
+    private void extractBeanDefinitions(String filename, Document dom)
     {
-        // FIXME - I'm not sure if the ":" is valid; could be an absolute Windows path
-        if (includedFile.contains(":") || includedFile.startsWith("/"))
-            return includedFile;
+        List<Element> beans = xpfact.newXPath("/b:beans/b:bean").evaluate(dom, Element.class);
+        logger.debug("found " + beans.size() + " bean definitions in " + filename);
 
-        String origPath = StringUtil.extractLeftOfLast(origFile, "/");
-        if (StringUtil.isEmpty(origPath))
-            return includedFile;
-
-        return origPath + "/" + includedFile;
+        for (Element bean : beans)
+        {
+            XmlBeanDefinition def = new XmlBeanDefinition(xpfact, bean);
+            beanDefinitions.put(def.getBeanId(), def);
+            logger.debug("XML bean \"" + def.getBeanId() + "\" => " + def.getBeanClass());
+        }
     }
 
 
+    private void processComponentScans(WarMachine war, Document dom)
+    {
+        for (ClasspathScanner scanner : getComponentScans(dom))
+        {
+            for (AnnotationParser parsedClass : scanner.scan(war).values())
+            {
+                ScannedBeanDefinition def = new ScannedBeanDefinition(parsedClass.getParsedClass(), parsedClass);
+                if (!beanDefinitions.containsKey(def.getBeanId()))
+                {
+                    beanDefinitions.put(def.getBeanId(), def);
+                    logger.debug("scanned bean \"" + def.getBeanId() + "\" => " + def.getBeanClass());
+                }
+            }
+        }
+    }
+
+
+    /**
+     *  Opens a resource stream, either looking to the passed WAR or (if it's null)
+     *  to the execution classpath.
+     */
     private InputStream openResource(WarMachine war, String file)
     throws IOException
     {
@@ -286,16 +276,40 @@ public class SpringContext
     }
 
 
-    private void extractBeanDefinitions(String filename)
+    private String rebaseIncludedResource(String origFile, String includedFile)
     {
-        List<Element> beans = xpfact.newXPath("/b:beans/b:bean").evaluate(dom, Element.class);
-        logger.debug("found " + beans.size() + " bean definitions in " + filename);
+        // FIXME - I'm not sure if the ":" is valid; could be an absolute Windows path
+        if (includedFile.contains(":") || includedFile.startsWith("/"))
+            return includedFile;
 
-        for (Element bean : beans)
+        String origPath = StringUtil.extractLeftOfLast(origFile, "/");
+        if (StringUtil.isEmpty(origPath))
+            return includedFile;
+
+        return origPath + "/" + includedFile;
+    }
+
+
+    private List<ClasspathScanner> getComponentScans(Document dom)
+    {
+        List<Element> scanDefs = xpfact.newXPath("/b:beans/ctx:component-scan")
+                                 .evaluate(dom, Element.class);
+
+        List<ClasspathScanner> result = new ArrayList<ClasspathScanner>(scanDefs.size());
+        for (Element elem : scanDefs)
         {
-            BeanDefinition def = new BeanDefinition(xpfact, bean);
-            beanDefinitions.put(def.getBeanId(), def);
-            logger.debug("found bean \"" + def.getBeanId() + "\" => " + def.getBeanClass());
+            ClasspathScanner scanner = new ClasspathScanner()
+                                       .addIncludedAnnotation(SpringConstants.ANNO_CONTROLLER)
+                                       .addIncludedAnnotation(SpringConstants.ANNO_COMPONENT);
+            String basePackage = elem.getAttribute("base-package");
+            String[] bp2 = basePackage.split(",");
+            for (String pkg : bp2)
+            {
+                scanner.addBasePackage(pkg.trim());
+            }
+            result.add(scanner);
         }
+
+        return result;
     }
 }
