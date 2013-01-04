@@ -20,7 +20,7 @@ import java.util.Map;
 import net.sf.kdgcommons.lang.StringUtil;
 
 import com.kdgregory.pathfinder.core.Destination;
-import com.kdgregory.pathfinder.util.InvocationOptions;
+import com.kdgregory.pathfinder.core.InvocationOptions;
 
 
 public class SpringDestination
@@ -85,6 +85,12 @@ implements Destination
     public Map<String,RequestParameter> getParams()
     {
         return requestParams;
+    }
+
+    @Override
+    public boolean isDisplayed(Map<InvocationOptions,Boolean> options)
+    {
+        return true;
     }
 
 

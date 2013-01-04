@@ -17,7 +17,7 @@ package com.kdgregory.pathfinder.servlet;
 import java.util.Map;
 
 import com.kdgregory.pathfinder.core.Destination;
-import com.kdgregory.pathfinder.util.InvocationOptions;
+import com.kdgregory.pathfinder.core.InvocationOptions;
 
 class JspDestination
 implements Destination
@@ -27,6 +27,12 @@ implements Destination
     public JspDestination(String filename)
     {
         this.filename = filename;
+    }
+
+    @Override
+    public boolean isDisplayed(Map<InvocationOptions,Boolean> options)
+    {
+        return ! options.get(InvocationOptions.IGNORE_JSP).booleanValue();
     }
 
     @Override

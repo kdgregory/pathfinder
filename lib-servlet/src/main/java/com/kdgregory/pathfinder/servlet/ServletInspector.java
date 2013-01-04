@@ -16,6 +16,7 @@ package com.kdgregory.pathfinder.servlet;
 
 import org.apache.log4j.Logger;
 
+import com.kdgregory.pathfinder.core.HttpMethod;
 import com.kdgregory.pathfinder.core.Inspector;
 import com.kdgregory.pathfinder.core.PathRepo;
 import com.kdgregory.pathfinder.core.WarMachine;
@@ -36,7 +37,7 @@ implements Inspector
     {
         logger.info("ServletInspector started");
         addServlets(war, paths);
-        addJSPandHTML(war, paths);
+        addJSPandStaticFiles(war, paths);
         logger.info("ServletInspector finished");
     }
 
@@ -58,20 +59,19 @@ implements Inspector
     }
 
 
-    private void addJSPandHTML(WarMachine war, PathRepo paths)
+    private void addJSPandStaticFiles(WarMachine war, PathRepo paths)
     {
         for (String filename : war.getPublicFiles())
         {
-            filename = filename.toLowerCase();
-            if (filename.endsWith(".jsp"))
+            if (filename.toLowerCase().endsWith(".jsp"))
             {
                 logger.debug("added JSP: " + filename);
                 paths.put(filename, new JspDestination(filename));
             }
-            if (filename.endsWith(".html") || filename.endsWith(".htm"))
+            else
             {
-                logger.debug("added static HTML: " + filename);
-                paths.put(filename, new HtmlDestination(filename));
+                logger.debug("added static destination: " + filename);
+                paths.put(filename, HttpMethod.GET, new StaticDestination(filename));
             }
         }
     }

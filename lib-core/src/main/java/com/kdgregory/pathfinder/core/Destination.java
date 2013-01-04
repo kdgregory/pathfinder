@@ -2,7 +2,6 @@ package com.kdgregory.pathfinder.core;
 
 import java.util.Map;
 
-import com.kdgregory.pathfinder.util.InvocationOptions;
 
 /**
  *  The destination of a URL. The various inspectors will provide their
@@ -10,6 +9,12 @@ import com.kdgregory.pathfinder.util.InvocationOptions;
  */
 public interface Destination
 {
+    /**
+     *  Returns an indication of whether this destination should be
+     *  displayed at all, given the current invocation options.
+     */
+    public boolean isDisplayed(Map<InvocationOptions, Boolean> options);
+
     /**
      *  Returns a formatted description of this destination, taking into
      *  consideration the specified invocation options.

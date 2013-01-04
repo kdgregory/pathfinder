@@ -17,7 +17,7 @@ package com.kdgregory.pathfinder.servlet;
 import java.util.Map;
 
 import com.kdgregory.pathfinder.core.Destination;
-import com.kdgregory.pathfinder.util.InvocationOptions;
+import com.kdgregory.pathfinder.core.InvocationOptions;
 
 class ServletDestination
 implements Destination
@@ -27,6 +27,12 @@ implements Destination
     public ServletDestination(String servletClass)
     {
         this.servletClass = servletClass;
+    }
+
+    @Override
+    public boolean isDisplayed(Map<InvocationOptions,Boolean> options)
+    {
+        return true;
     }
 
     @Override

@@ -12,8 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package com.kdgregory.pathfinder.util;
+package com.kdgregory.pathfinder.core;
 
+import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.EnumMap;
 import java.util.List;
@@ -32,9 +33,23 @@ import java.util.Map;
  */
 public enum InvocationOptions
 {
-    ENABLE_REQUEST_PARAMS("--showRequestParams", "--noShowRequestParams", false,
-                          "For mappings that identify individual request parameters (eg, Spring3) "
-                        + "show those parameters in the mapping output");
+    IGNORE_JSP(
+            "--ignoreJSP", "--noIgnoreJSP", false,
+            "Do not display client-accessible JSP files."),
+
+    IGNORE_HTML(
+            "--ignoreHtml", "--noIgnoreHtml", false,
+            "Do not display client-accessible static HTML content."),
+
+    IGNORE_STATIC(
+            "--ignoreStatic", "--noIgnoreStatic", true,
+            "Do not display client-accessible static content other than HTML "
+            + "(eg, JS and CSS)."),
+
+    ENABLE_REQUEST_PARAMS(
+            "--showRequestParams", "--noShowRequestParams", false,
+            "For mappings that identify individual request parameters (eg, Spring3) "
+            + "show those parameters in the mapping output.");
 
 //----------------------------------------------------------------------------
 //  Instance variables and constructor
@@ -55,8 +70,58 @@ public enum InvocationOptions
 
 
 //----------------------------------------------------------------------------
-//  Utilities
+//  Instance methods
 //----------------------------------------------------------------------------
+
+    /**
+     *  Returns the string value of the "enable" command-line option.
+     */
+    public String getEnableString()
+    {
+        return cliEnable;
+    }
+
+
+    /**
+     *  Returns the string value of the "disable" command-line option.
+     */
+    public String getDisableString()
+    {
+        return cliDisable;
+    }
+
+
+//----------------------------------------------------------------------------
+//  Static utility methods Utilities
+//----------------------------------------------------------------------------
+
+    /**
+     *  Writes all options to StdOut.
+     */
+    public static void dump(PrintStream out)
+    {
+        for (InvocationOptions option : InvocationOptions.values())
+        {
+            out.println();
+
+            out.print("    " + option.cliEnable);
+            if (option.defaultValue)
+                out.println(" (default)");
+            else
+                out.println();
+
+            out.print("    " + option.cliDisable);
+            if (option.defaultValue)
+                out.println();
+            else
+                out.println(" (default)");
+
+            out.println();
+            out.println("    " + option.description);
+        }
+        System.out.println();
+    }
+
 
     /**
      *  Processes the command line, removing all arguments that start with "--"

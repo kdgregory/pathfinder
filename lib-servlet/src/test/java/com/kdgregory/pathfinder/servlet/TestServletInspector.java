@@ -39,7 +39,7 @@ public class TestServletInspector
         assertEquals("com.example.servlet.SomeServlet", repo.get("/servlet2", HttpMethod.ALL).toString());
         assertEquals("/index.jsp",                      repo.get("/index.jsp", HttpMethod.ALL).toString());
         assertEquals("/subdir/index.jsp",               repo.get("/subdir/index.jsp", HttpMethod.ALL).toString());
-        assertEquals("/index.html",                     repo.get("/index.html", HttpMethod.ALL).toString());
+        assertEquals("/index.html",                     repo.get("/index.html", HttpMethod.GET).toString());
 
         // and verify that we don't know nothing about the hidden JSP
         assertNull(repo.get("/WEB-INF/views/hidden.jsp", HttpMethod.ALL));

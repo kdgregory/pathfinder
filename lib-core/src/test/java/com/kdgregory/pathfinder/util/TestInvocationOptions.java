@@ -19,6 +19,8 @@ import java.util.Map;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
+import com.kdgregory.pathfinder.core.InvocationOptions;
+
 
 public class TestInvocationOptions
 {

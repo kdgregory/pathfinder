@@ -17,16 +17,40 @@ package com.kdgregory.pathfinder.servlet;
 import java.util.Map;
 
 import com.kdgregory.pathfinder.core.Destination;
-import com.kdgregory.pathfinder.util.InvocationOptions;
+import com.kdgregory.pathfinder.core.InvocationOptions;
 
-class HtmlDestination
+class StaticDestination
 implements Destination
 {
     private String filename;
+    private boolean isHtml;
 
-    public HtmlDestination(String filename)
+    public StaticDestination(String filename)
     {
         this.filename = filename;
+
+        String lcFilename = filename.toLowerCase();
+        this.isHtml = lcFilename.endsWith(".html") || lcFilename.endsWith(".htm");
+    }
+
+
+    /**
+     *  Returns an indication of whether this destination is a static HTML file
+     *  or something else (image, CSS, whatever).
+     */
+    public boolean isHtml()
+    {
+        return isHtml;
+    }
+
+
+    @Override
+    public boolean isDisplayed(Map<InvocationOptions,Boolean> options)
+    {
+        if (isHtml)
+            return ! options.get(InvocationOptions.IGNORE_HTML).booleanValue();
+        else
+            return ! options.get(InvocationOptions.IGNORE_STATIC).booleanValue();
     }
 
     @Override

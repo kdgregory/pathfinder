@@ -22,8 +22,6 @@ import org.junit.Test;
 import static org.junit.Assert.*;
 
 import com.kdgregory.pathfinder.core.impl.PathRepoImpl;
-import com.kdgregory.pathfinder.util.InvocationOptions;
-
 
 
 public class TestPathRepo
@@ -48,11 +46,18 @@ public class TestPathRepo
     implements Destination
     {
         @Override
+        public boolean isDisplayed(Map<InvocationOptions,Boolean> options)
+        {
+            throw new IllegalStateException("we shouldn't be testing output");
+        }
+
+        @Override
         public String toString(Map<InvocationOptions,Boolean> options)
         {
-            throw new UnsupportedOperationException("we don't test output here");
+            throw new IllegalStateException("we shouldn't be testing output");
         }
     }
+
 
 //----------------------------------------------------------------------------
 //  TestCases
