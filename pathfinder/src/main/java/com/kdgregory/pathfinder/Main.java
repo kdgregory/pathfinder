@@ -18,6 +18,11 @@ import java.io.File;
 import java.io.PrintStream;
 import java.util.Map;
 
+import org.apache.log4j.ConsoleAppender;
+import org.apache.log4j.Level;
+import org.apache.log4j.Logger;
+import org.apache.log4j.PatternLayout;
+
 import net.sf.kdgcommons.lang.UnreachableCodeException;
 
 import com.kdgregory.pathfinder.core.Destination;
@@ -41,6 +46,22 @@ public class Main
     {
         Map<InvocationOptions, Boolean> options = InvocationOptions.parseCli(argv);
         WarMachine machine = openWarOrDie(InvocationOptions.removeInvocationArguments(argv));
+
+        if (InvocationOptions.DEBUG.isEnabled(options) || InvocationOptions.VERBOSE.isEnabled(options))
+        {
+            // we can't get access to the appenders in the log4j.properties file,
+            // so we have to construct appender and layout ourselves ... yuck
+
+            PatternLayout layout = new PatternLayout("%-5p - %c{1} - %m%n");
+            ConsoleAppender appender = new ConsoleAppender(layout, "System.err");
+            Logger logger = Logger.getLogger("com.kdgregory.pathfinder");
+            logger.removeAllAppenders();
+            logger.addAppender(appender);
+            logger.setLevel(Level.DEBUG);
+            if (InvocationOptions.VERBOSE.isEnabled(options))
+                logger.setLevel(Level.TRACE);
+        }
+
         new Main(options, machine, System.out).run();
     }
 

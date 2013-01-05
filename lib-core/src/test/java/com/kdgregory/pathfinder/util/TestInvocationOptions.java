@@ -39,26 +39,41 @@ public class TestInvocationOptions
     @Test
     public void testParseDefaults() throws Exception
     {
-        Map<InvocationOptions,Boolean> rslt = InvocationOptions.parseCli();
-        assertFalse("ENABLE_REQUEST_PARAMS", rslt.get(InvocationOptions.ENABLE_REQUEST_PARAMS).booleanValue());
+        Map<InvocationOptions,Boolean> opts = InvocationOptions.parseCli();
+
+        assertFalse("--ignoreJSP",          InvocationOptions.IGNORE_JSP.isEnabled(opts));
+        assertFalse("--ignoreHtml",         InvocationOptions.IGNORE_HTML.isEnabled(opts));
+        assertTrue("--ignoreStatic",        InvocationOptions.IGNORE_STATIC.isEnabled(opts));
+        assertFalse("--showRequestParams",  InvocationOptions.ENABLE_REQUEST_PARAMS.isEnabled(opts));
     }
 
 
     @Test
     public void testParseEnabled() throws Exception
     {
-        Map<InvocationOptions,Boolean> rslt = InvocationOptions.parseCli(
-                                                "--showRequestParams");
-        assertTrue("ENABLE_REQUEST_PARAMS", rslt.get(InvocationOptions.ENABLE_REQUEST_PARAMS).booleanValue());
+        Map<InvocationOptions,Boolean> opts
+            = InvocationOptions.parseCli(
+                "--ignoreJSP", "--ignoreHtml", "--ignoreStatic",
+                "--showRequestParams");
+
+        assertTrue("--ignoreJSP",          InvocationOptions.IGNORE_JSP.isEnabled(opts));
+        assertTrue("--ignoreHtml",         InvocationOptions.IGNORE_HTML.isEnabled(opts));
+        assertTrue("--ignoreStatic",        InvocationOptions.IGNORE_STATIC.isEnabled(opts));
+        assertTrue("--showRequestParams",  InvocationOptions.ENABLE_REQUEST_PARAMS.isEnabled(opts));
     }
 
 
     @Test
     public void testParseDisabled() throws Exception
     {
-        Map<InvocationOptions,Boolean> rslt = InvocationOptions.parseCli(
-                                                "--noShowRequestParams");
-        assertFalse("ENABLE_REQUEST_PARAMS", rslt.get(InvocationOptions.ENABLE_REQUEST_PARAMS).booleanValue());
-    }
+        Map<InvocationOptions,Boolean> opts
+            = InvocationOptions.parseCli(
+                "--noIgnoreJSP", "--noIgnoreHtml", "--noIgnoreStatic",
+                "--noShowRequestParams");
 
+        assertFalse("--ignoreJSP",          InvocationOptions.IGNORE_JSP.isEnabled(opts));
+        assertFalse("--ignoreHtml",         InvocationOptions.IGNORE_HTML.isEnabled(opts));
+        assertFalse("--ignoreStatic",        InvocationOptions.IGNORE_STATIC.isEnabled(opts));
+        assertFalse("--showRequestParams",  InvocationOptions.ENABLE_REQUEST_PARAMS.isEnabled(opts));
+    }
 }

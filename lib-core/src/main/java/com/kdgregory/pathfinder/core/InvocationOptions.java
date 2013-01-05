@@ -20,6 +20,8 @@ import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
 
+import net.sf.kdgcommons.lang.StringUtil;
+
 
 /**
  *  Options to control the behavior of the PathFinder. These will be parsed
@@ -49,7 +51,15 @@ public enum InvocationOptions
     ENABLE_REQUEST_PARAMS(
             "--showRequestParams", "--noShowRequestParams", false,
             "For mappings that identify individual request parameters (eg, Spring3) "
-            + "show those parameters in the mapping output.");
+            + "show those parameters in the mapping output."),
+
+    DEBUG(
+            "--debug", "", false,
+            "Enable debug-level logging to StdErr."),
+
+    VERBOSE(
+            "--verbose", "", false,
+            "Enable verbose debugging (implies --debug).");
 
 //----------------------------------------------------------------------------
 //  Instance variables and constructor
@@ -91,6 +101,18 @@ public enum InvocationOptions
     }
 
 
+    /**
+     *  Given a map of options, returns an indication of whether this
+     *  option is enabled. If the option is not in the map, it is
+     *  considered disabled.
+     */
+    public boolean isEnabled(Map<InvocationOptions,Boolean> map)
+    {
+        Boolean value = map.get(this);
+        return (value != null) ? value.booleanValue() : false;
+    }
+
+
 //----------------------------------------------------------------------------
 //  Static utility methods Utilities
 //----------------------------------------------------------------------------
@@ -110,16 +132,18 @@ public enum InvocationOptions
             else
                 out.println();
 
-            out.print("    " + option.cliDisable);
-            if (option.defaultValue)
-                out.println();
-            else
-                out.println(" (default)");
+            if (! StringUtil.isBlank(option.cliDisable))
+            {
+                out.print("    " + option.cliDisable);
+                if (option.defaultValue)
+                    out.println();
+                else
+                    out.println(" (default)");
+            }
 
-            out.println();
             out.println("    " + option.description);
         }
-        System.out.println();
+        out.println();
     }
 
 
