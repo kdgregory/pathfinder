@@ -20,29 +20,9 @@
 
     <dependencies>
         <dependency>
-            <groupId>com.kdgregory.pathfinder</groupId>
-            <artifactId>pathfinder-testdata</artifactId>
-            <version>${project.version}</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>com.kdgregory.pathfinder</groupId>
-            <artifactId>pathfinder-testdata</artifactId>
-            <version>${project.version}</version>
-            <classifier>archive</classifier>
-            <scope>test</scope>
-        </dependency>
-
-        <dependency>
-            <!-- GITHUB -->
             <groupId>com.kdgregory.bcelx</groupId>
             <artifactId>bcelx</artifactId>
             <version>${bcelx.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>commons-io</groupId>
-            <artifactId>commons-io</artifactId>
-            <version>${commons.io.version}</version>
         </dependency>
         <dependency>
             <groupId>log4j</groupId>
@@ -58,6 +38,31 @@
             <groupId>net.sf.practicalxml</groupId>
             <artifactId>practicalxml</artifactId>
             <version>${practicalxml.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.bcel</groupId>
+            <artifactId>bcel</artifactId>
+            <version>${bcel.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.kdgregory.pathfinder</groupId>
+            <artifactId>pathfinder-testdata</artifactId>
+            <version>${project.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.kdgregory.pathfinder</groupId>
+            <artifactId>pathfinder-testdata</artifactId>
+            <version>${project.version}</version>
+            <classifier>archive</classifier>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>commons-io</groupId>
+            <artifactId>commons-io</artifactId>
+            <version>${commons.io.version}</version>
+            <scope>test</scope>
         </dependency>
     </dependencies>
 

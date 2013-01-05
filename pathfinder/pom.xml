@@ -20,20 +20,6 @@
     <dependencies>
         <dependency>
             <groupId>com.kdgregory.pathfinder</groupId>
-            <artifactId>pathfinder-testdata</artifactId>
-            <version>${project.version}</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>com.kdgregory.pathfinder</groupId>
-            <artifactId>pathfinder-testdata</artifactId>
-            <version>${project.version}</version>
-            <classifier>archive</classifier>
-            <scope>test</scope>
-        </dependency>
-        
-        <dependency>
-            <groupId>com.kdgregory.pathfinder</groupId>
             <artifactId>pathfinder-core</artifactId>
             <version>${project.version}</version>
         </dependency>
@@ -46,6 +32,20 @@
             <groupId>com.kdgregory.pathfinder</groupId>
             <artifactId>pathfinder-spring</artifactId>
             <version>${project.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.kdgregory.pathfinder</groupId>
+            <artifactId>pathfinder-testdata</artifactId>
+            <version>${project.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.kdgregory.pathfinder</groupId>
+            <artifactId>pathfinder-testdata</artifactId>
+            <version>${project.version}</version>
+            <classifier>archive</classifier>
+            <scope>test</scope>
         </dependency>
     </dependencies>
 

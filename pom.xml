@@ -29,6 +29,7 @@
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 
         <!-- all dependency versions are specified here -->
+        <bcel.version>5.2</bcel.version>
         <bcelx.version>1.0.0</bcelx.version>
         <commons.io.version>2.3</commons.io.version>
         <javax.servlet.version>2.4</javax.servlet.version>
