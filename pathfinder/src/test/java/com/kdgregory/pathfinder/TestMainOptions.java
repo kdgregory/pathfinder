@@ -85,7 +85,7 @@ public class TestMainOptions
     @Test
     public void testIgnoreHtml() throws Exception
     {
-        run(WarNames.STATIC, InvocationOptions.IGNORE_HTML.getEnableString());
+        run(WarNames.STATIC, InvocationOptions.SHOW_HTML.getDisableString());
         assertExpectedUrls(
                 "/index.jsp",
                 "/subdir/index.jsp");
@@ -99,7 +99,7 @@ public class TestMainOptions
     @Test
     public void testIgnoreJSP() throws Exception
     {
-        run(WarNames.STATIC, InvocationOptions.IGNORE_JSP.getEnableString());
+        run(WarNames.STATIC, InvocationOptions.SHOW_JSP.getDisableString());
         assertExpectedUrls(
                 "/index.html");
         assertUnexpectedUrls(
@@ -113,7 +113,7 @@ public class TestMainOptions
     @Test
     public void testIncludeStatic() throws Exception
     {
-        run(WarNames.STATIC, InvocationOptions.IGNORE_STATIC.getDisableString());
+        run(WarNames.STATIC, InvocationOptions.SHOW_STATIC.getEnableString());
         assertExpectedUrls(
                 "/index.html",
                 "/index.jsp",
@@ -136,7 +136,7 @@ public class TestMainOptions
     @Test
     public void testSpringWithParameters() throws Exception
     {
-        run(WarNames.SPRING_ANNO, InvocationOptions.ENABLE_REQUEST_PARAMS.getEnableString());
+        run(WarNames.SPRING_ANNO, InvocationOptions.SHOW_REQUEST_PARAMS.getEnableString());
         assertTrue("controller should show params",
                    output.contains("com.kdgregory.pathfinder.test.spring3.pkg2.ControllerE.getFoo(java.lang.String argle,"));
     }

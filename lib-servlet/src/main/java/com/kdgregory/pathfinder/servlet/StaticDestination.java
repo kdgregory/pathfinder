@@ -48,9 +48,9 @@ implements Destination
     public boolean isDisplayed(Map<InvocationOptions,Boolean> options)
     {
         if (isHtml)
-            return ! InvocationOptions.IGNORE_HTML.isEnabled(options);
+            return InvocationOptions.SHOW_HTML.isEnabled(options);
         else
-            return ! InvocationOptions.IGNORE_STATIC.isEnabled(options);
+            return InvocationOptions.SHOW_STATIC.isEnabled(options);
     }
 
     @Override

@@ -35,21 +35,21 @@ import net.sf.kdgcommons.lang.StringUtil;
  */
 public enum InvocationOptions
 {
-    IGNORE_JSP(
-            "--ignoreJSP", "--noIgnoreJSP", false,
-            "Do not display client-accessible JSP files."),
+    SHOW_JSP(
+            "--showJSP", "--hideJSP", true,
+            "Display client-accessible JSP files as destination URLs."),
 
-    IGNORE_HTML(
-            "--ignoreHtml", "--noIgnoreHtml", false,
-            "Do not display client-accessible static HTML content."),
+    SHOW_HTML(
+            "--showHTML", "--hideHTML", true,
+            "Display client-accessible static HTML content as destination URLs."),
 
-    IGNORE_STATIC(
-            "--ignoreStatic", "--noIgnoreStatic", true,
-            "Do not display client-accessible static content other than HTML "
-            + "(eg, JS and CSS)."),
+    SHOW_STATIC(
+            "--showStatic", "--hideStatic", false,
+            "Display client-accessible static content other than HTML"
+            + " (eg, JS and CSS) as destination URLs."),
 
-    ENABLE_REQUEST_PARAMS(
-            "--showRequestParams", "--noShowRequestParams", false,
+    SHOW_REQUEST_PARAMS(
+            "--showRequestParams", "--hideRequestParams", false,
             "For mappings that identify individual request parameters (eg, Spring3) "
             + "show those parameters in the mapping output."),
 

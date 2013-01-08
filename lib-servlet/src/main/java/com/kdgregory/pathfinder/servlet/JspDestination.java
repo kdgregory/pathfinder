@@ -32,7 +32,7 @@ implements Destination
     @Override
     public boolean isDisplayed(Map<InvocationOptions,Boolean> options)
     {
-        return ! InvocationOptions.IGNORE_JSP.isEnabled(options);
+        return InvocationOptions.SHOW_JSP.isEnabled(options);
     }
 
     @Override

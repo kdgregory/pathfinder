@@ -108,7 +108,7 @@ implements Destination
     public String toString(Map<InvocationOptions,Boolean> options)
     {
         String base = toString();
-        if (! InvocationOptions.ENABLE_REQUEST_PARAMS.isEnabled(options))
+        if (! InvocationOptions.SHOW_REQUEST_PARAMS.isEnabled(options))
             return base;
 
         StringBuilder sb = new StringBuilder(1024)
