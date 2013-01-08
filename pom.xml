@@ -19,7 +19,7 @@
         <module>lib-core</module>
         <module>lib-servlet</module>
         <module>lib-spring</module>
-        <module>pathfinder</module>
+        <module>app-pathfinder</module>
     </modules>
 
 
