@@ -59,7 +59,6 @@ public class SpringContext
 //  Instance Variables and Constructor
 //----------------------------------------------------------------------------
 
-    private SpringContext parent;
     private Map<String,BeanDefinition> beanDefinitions = new HashMap<String,BeanDefinition>();
 
 
@@ -75,6 +74,21 @@ public class SpringContext
      */
     public SpringContext(WarMachine war, String contextLocation)
     {
+        this(null, war, contextLocation);
+    }
+
+
+    /**
+     *  Creates an instance that will append beans defined in the passed
+     *  context to those defined by the parent context.
+     */
+    public SpringContext(SpringContext parent, WarMachine war, String contextLocation)
+    {
+        if (parent != null)
+        {
+            beanDefinitions.putAll(parent.beanDefinitions);
+        }
+
         for (String path : decomposeContextLocation(contextLocation))
         {
             Document dom = parseContextFile(war, path);
@@ -82,17 +96,6 @@ public class SpringContext
             extractBeanDefinitions(path, dom);
             processComponentScans(war, dom);
         }
-    }
-
-
-    /**
-     *  Creates an instance that will delegate bean lookups to its parent if
-     *  they are not found locally.
-     */
-    public SpringContext(SpringContext parent, WarMachine war, String contextLocation)
-    {
-        this(war, contextLocation);
-        this.parent = parent;
     }
 
 
@@ -105,12 +108,7 @@ public class SpringContext
      */
     public Map<String,BeanDefinition> getBeans()
     {
-        if (parent == null)
-            return Collections.unmodifiableMap(beanDefinitions);
-
-        Map<String,BeanDefinition> combined = new HashMap<String,BeanDefinition>();
-        buildBeanMapFromHierarchy(combined);
-        return Collections.unmodifiableMap(combined);
+        return Collections.unmodifiableMap(beanDefinitions);
     }
 
 
@@ -120,11 +118,7 @@ public class SpringContext
      */
     public BeanDefinition getBean(String name)
     {
-        BeanDefinition def = beanDefinitions.get(name);
-        if ((def == null) && (parent != null))
-            def = parent.getBean(name);
-
-        return def;
+        return beanDefinitions.get(name);
     }
 
 
@@ -141,9 +135,6 @@ public class SpringContext
                 beans.add(bean);
         }
 
-        if (parent != null)
-            beans.addAll(parent.getBeansByClass(className));
-
         return beans;
     }
 
@@ -151,18 +142,6 @@ public class SpringContext
 //----------------------------------------------------------------------------
 //  Internals
 //----------------------------------------------------------------------------
-
-    private void buildBeanMapFromHierarchy(Map<String,BeanDefinition> map)
-    {
-        // note: if both parent and child declares the same beans, it
-        // should be an error; we'll assume that a running WAR won't
-        // have errors of that sort
-
-        map.putAll(beanDefinitions);
-        if (parent != null)
-            parent.buildBeanMapFromHierarchy(map);
-    }
-
 
     private List<String> decomposeContextLocation(String contextLocation)
     {
@@ -246,10 +225,20 @@ public class SpringContext
             for (AnnotationParser parsedClass : scanner.scan(war).values())
             {
                 ScannedBeanDefinition def = new ScannedBeanDefinition(parsedClass.getParsedClass(), parsedClass);
-                if (!beanDefinitions.containsKey(def.getBeanId()))
+                if (! beanDefinitions.containsKey(def.getBeanId()))
                 {
                     beanDefinitions.put(def.getBeanId(), def);
                     logger.debug("scanned bean \"" + def.getBeanId() + "\" => " + def.getBeanClass());
+                }
+                else
+                {
+                    BeanDefinition existing = beanDefinitions.get(def.getBeanId());
+                    if (! existing.getBeanClass().equals(def.getBeanClass()))
+                    {
+                        logger.warn("multiple beans with same id: " + def.getBeanId()
+                                    + "; keeping " + existing.getBeanClass()
+                                    + ", ignoring " + def.getBeanClass());
+                    }
                 }
             }
         }

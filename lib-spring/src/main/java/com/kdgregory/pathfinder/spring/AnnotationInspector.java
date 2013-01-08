@@ -27,7 +27,6 @@ import org.apache.bcel.generic.Type;
 import org.apache.log4j.Logger;
 
 import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
 
 import net.sf.kdgcommons.lang.ClassUtil;
 
@@ -153,7 +152,7 @@ public class AnnotationInspector
         Type[] methodParams = method.getArgumentTypes();
         for (int parmIdx = 0 ; parmIdx < methodParams.length ; parmIdx++)
         {
-            Annotation paramAnno = ap.getParameterAnnotation(method, parmIdx, RequestParam.class.getName());
+            Annotation paramAnno = ap.getParameterAnnotation(method, parmIdx, SpringConstants.ANNO_REQUEST_PARAM);
             if (paramAnno == null)
                 continue;
 

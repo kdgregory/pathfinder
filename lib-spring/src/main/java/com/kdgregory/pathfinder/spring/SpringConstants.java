@@ -29,4 +29,5 @@ public class SpringConstants
     public final static String ANNO_CONTROLLER              = "org.springframework.stereotype.Controller";
     public final static String ANNO_COMPONENT               = "org.springframework.stereotype.Component";
     public final static String ANNO_REQUEST_MAPPING         = "org.springframework.web.bind.annotation.RequestMapping";
+    public final static String ANNO_REQUEST_PARAM           = "org.springframework.web.bind.annotation.RequestParam";
 }

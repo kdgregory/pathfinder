@@ -9,6 +9,7 @@
 
 	<bean id="controllerA" class="com.kdgregory.pathfinder.test.spring2.FooController"/>
     <bean id="controllerB" class="com.kdgregory.pathfinder.test.spring2.BarController"/>
+    <bean id="controllerC" class="com.kdgregory.pathfinder.test.spring2.BazCtrl"/>
 
 	<bean id="urlMapping" class="org.springframework.web.servlet.mvc.support.ControllerClassNameHandlerMapping">
         <property name="pathPrefix" value="/test/"/>

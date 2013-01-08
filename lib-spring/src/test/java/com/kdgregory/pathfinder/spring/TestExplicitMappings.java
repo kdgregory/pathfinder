@@ -79,7 +79,7 @@ extends AbstractSpringTestcase
         processWar(WarNames.SPRING_CLASS_NAME);
 
         // index.jsp + 2 Spring mappings
-        assertEquals("number of mapped URLs", 3, pathRepo.urlCount());
+        assertEquals("number of mapped URLs", 4, pathRepo.urlCount());
 
         SpringDestination dest1 = (SpringDestination)pathRepo.get("/servlet/test/foo", HttpMethod.GET);
         assertEquals("controllerA", dest1.getBeanId());
@@ -88,5 +88,9 @@ extends AbstractSpringTestcase
         SpringDestination dest2 = (SpringDestination)pathRepo.get("/servlet/test/bar", HttpMethod.GET);
         assertEquals("controllerB", dest2.getBeanId());
         assertEquals("com.kdgregory.pathfinder.test.spring2.BarController", dest2.getBeanClass());
+
+        SpringDestination dest3 = (SpringDestination)pathRepo.get("/servlet/test/bazctrl", HttpMethod.GET);
+        assertEquals("controllerC", dest3.getBeanId());
+        assertEquals("com.kdgregory.pathfinder.test.spring2.BazCtrl", dest3.getBeanClass());
     }
 }
