@@ -132,8 +132,10 @@
 
 
     <repositories>
+        <!-- this repository holds snapshots of BCELX, PracticalXML and KDGCommons -->
+        <!-- enable whenever using one of these snapshots, otherwise go to Central -->
+<!--
         <repository>
-            <!-- this repository holds BCELX and snapshots of PracticalXML and KDGCommons -->
             <id>sonatype-nexus-snapshots</id>
             <url>https://oss.sonatype.org/content/repositories/snapshots</url>
             <releases>
@@ -143,6 +145,7 @@
                 <enabled>true</enabled>
             </snapshots>
         </repository>
+-->
     </repositories>
 
 
