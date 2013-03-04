@@ -7,6 +7,8 @@
                         http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
                         http://www.springframework.org/schema/mvc     http://www.springframework.org/schema/mvc/spring-mvc.xsd">
 
+    <mvc:annotation-driven/>
+
     <!-- note that two beans are marked with @Controller, but only one is mentioned here -->
     <bean class="com.kdgregory.pathfinder.test.spring3.pkg1.ControllerB"/>
 
