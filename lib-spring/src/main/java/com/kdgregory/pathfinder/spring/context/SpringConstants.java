@@ -16,7 +16,7 @@
 /**
  *  Constants related to Spring implementations: classnames, locations, &c.
  */
-package com.kdgregory.pathfinder.spring;
+package com.kdgregory.pathfinder.spring.context;
 
 public class SpringConstants
 {

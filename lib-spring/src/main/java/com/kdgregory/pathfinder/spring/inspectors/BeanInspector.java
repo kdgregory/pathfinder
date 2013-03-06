@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package com.kdgregory.pathfinder.spring;
+package com.kdgregory.pathfinder.spring.inspectors;
 
 import java.util.List;
 import java.util.Map;
@@ -25,7 +25,12 @@ import net.sf.kdgcommons.lang.StringUtil;
 
 import com.kdgregory.pathfinder.core.PathRepo;
 import com.kdgregory.pathfinder.core.WarMachine;
-import com.kdgregory.pathfinder.spring.BeanDefinition.DefinitionType;
+import com.kdgregory.pathfinder.spring.SpringDestination;
+import com.kdgregory.pathfinder.spring.context.BeanDefinition;
+import com.kdgregory.pathfinder.spring.context.SpringConstants;
+import com.kdgregory.pathfinder.spring.context.SpringContext;
+import com.kdgregory.pathfinder.spring.context.XmlBeanDefinition;
+import com.kdgregory.pathfinder.spring.context.BeanDefinition.DefinitionType;
 
 
 /**

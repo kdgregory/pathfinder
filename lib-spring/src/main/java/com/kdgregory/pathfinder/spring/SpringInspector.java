@@ -28,6 +28,10 @@ import com.kdgregory.pathfinder.core.Inspector;
 import com.kdgregory.pathfinder.core.PathRepo;
 import com.kdgregory.pathfinder.core.WarMachine;
 import com.kdgregory.pathfinder.core.WarMachine.ServletMapping;
+import com.kdgregory.pathfinder.spring.context.SpringConstants;
+import com.kdgregory.pathfinder.spring.context.SpringContext;
+import com.kdgregory.pathfinder.spring.inspectors.AnnotationInspector;
+import com.kdgregory.pathfinder.spring.inspectors.BeanInspector;
 
 
 /**

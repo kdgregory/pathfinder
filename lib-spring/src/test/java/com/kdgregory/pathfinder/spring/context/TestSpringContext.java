@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package com.kdgregory.pathfinder.spring;
+package com.kdgregory.pathfinder.spring.context;
 
 import java.util.List;
 import java.util.Properties;
@@ -23,6 +23,9 @@ import static org.junit.Assert.*;
 import org.apache.log4j.Logger;
 
 import com.kdgregory.pathfinder.core.WarMachine;
+import com.kdgregory.pathfinder.spring.context.BeanDefinition;
+import com.kdgregory.pathfinder.spring.context.SpringContext;
+import com.kdgregory.pathfinder.spring.context.XmlBeanDefinition;
 import com.kdgregory.pathfinder.test.WarNames;
 import com.kdgregory.pathfinder.util.TestHelpers;
 

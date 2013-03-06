@@ -21,6 +21,7 @@ import net.sf.kdgcommons.lang.StringUtil;
 
 import com.kdgregory.pathfinder.core.Destination;
 import com.kdgregory.pathfinder.core.InvocationOptions;
+import com.kdgregory.pathfinder.spring.context.BeanDefinition;
 
 
 public class SpringDestination

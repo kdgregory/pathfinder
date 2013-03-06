@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package com.kdgregory.pathfinder.spring;
+package com.kdgregory.pathfinder.spring.inspectors;
 
 import java.util.Map;
 
@@ -24,6 +24,8 @@ import com.kdgregory.pathfinder.core.PathRepo;
 import com.kdgregory.pathfinder.core.WarMachine;
 import com.kdgregory.pathfinder.core.impl.PathRepoImpl;
 import com.kdgregory.pathfinder.servlet.ServletInspector;
+import com.kdgregory.pathfinder.spring.AbstractSpringTestcase;
+import com.kdgregory.pathfinder.spring.SpringDestination;
 import com.kdgregory.pathfinder.spring.SpringDestination.RequestParameter;
 import com.kdgregory.pathfinder.test.WarNames;
 import com.kdgregory.pathfinder.util.TestHelpers;

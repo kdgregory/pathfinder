@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package com.kdgregory.pathfinder.spring;
+package com.kdgregory.pathfinder.spring.context;
 
 import java.io.IOException;
 import java.io.StringReader;
@@ -24,6 +24,7 @@ import org.w3c.dom.Element;
 import net.sf.kdgcommons.lang.StringUtil;
 import net.sf.practicalxml.DomUtil;
 import net.sf.practicalxml.xpath.XPathWrapperFactory;
+
 
 
 /**
