@@ -14,21 +14,14 @@
 
 package com.kdgregory.pathfinder.spring.inspectors;
 
-import java.util.Map;
+import static org.junit.Assert.assertEquals;
 
 import org.junit.Test;
-import static org.junit.Assert.*;
 
 import com.kdgregory.pathfinder.core.HttpMethod;
-import com.kdgregory.pathfinder.core.PathRepo;
-import com.kdgregory.pathfinder.core.WarMachine;
-import com.kdgregory.pathfinder.core.impl.PathRepoImpl;
-import com.kdgregory.pathfinder.servlet.ServletInspector;
 import com.kdgregory.pathfinder.spring.AbstractSpringTestcase;
 import com.kdgregory.pathfinder.spring.SpringDestination;
-import com.kdgregory.pathfinder.spring.SpringDestination.RequestParameter;
 import com.kdgregory.pathfinder.test.WarNames;
-import com.kdgregory.pathfinder.util.TestHelpers;
 
 
 /**
