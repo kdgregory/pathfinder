@@ -32,17 +32,17 @@ Running
 
 The end of the build is a "shaded" JAR, containing all dependencies. So you can invoke it using the `java -jar` command:
 
-    java -jar pathfinder/target/pathfinder-1.0-SNAPSHOT.jar WARFILE
+    java -jar app-pathfinder/target/pathfinder-1.0-SNAPSHOT.jar WARFILE
 
 Replacing WARFILE with the Spring3 test WAR, you'll see something like the following:
 
-    > java -jar pathfinder/target/pathfinder-1.0-SNAPSHOT.jar testdata-spring3/target/pathfinder-testdata-spring3-1.0-SNAPSHOT.war 
+    > java -jar app-pathfinder/target/pathfinder-1.0-SNAPSHOT.jar testdata-spring3/target/pathfinder-testdata-spring3-1.0-SNAPSHOT.war 
     /index.jsp                              /index.jsp
     /servlet/B/bar.html            GET      com.kdgregory.pathfinder.test.spring3.pkg2.ControllerB
     /servlet/B/baz.html            POST     com.kdgregory.pathfinder.test.spring3.pkg2.ControllerB
     /servlet/foo.html                       com.kdgregory.pathfinder.test.spring3.pkg1.ControllerA
 
-If you want to be overwhelmed with output, edit the `pathfinder/src/main/resources/log4j.properties` to select something other than the "null" appender.
+If you want to be overwhelmed with output, edit the `app-pathfinder/src/main/resources/log4j.properties` to select something other than the "null" appender.
 
 
 Developing
