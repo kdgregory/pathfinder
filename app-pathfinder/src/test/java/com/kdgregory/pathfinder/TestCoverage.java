@@ -17,12 +17,10 @@ package com.kdgregory.pathfinder;
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
 import java.lang.reflect.Field;
-import java.util.Collections;
-
-import org.junit.Ignore;
-import org.junit.Test;
 
 import org.apache.log4j.Logger;
+import org.junit.Ignore;
+import org.junit.Test;
 
 import com.kdgregory.pathfinder.core.InvocationOptions;
 import com.kdgregory.pathfinder.core.WarMachine;

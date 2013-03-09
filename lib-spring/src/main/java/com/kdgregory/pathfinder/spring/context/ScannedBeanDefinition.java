@@ -16,8 +16,6 @@ package com.kdgregory.pathfinder.spring.context;
 
 import org.apache.bcel.classfile.JavaClass;
 
-import net.sf.kdgcommons.lang.StringUtil;
-
 import com.kdgregory.bcelx.classfile.Annotation;
 import com.kdgregory.bcelx.classfile.Annotation.ParamValue;
 import com.kdgregory.bcelx.parser.AnnotationParser;
