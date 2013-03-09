@@ -114,8 +114,9 @@
                 <module>testdata-spring-anno-noscan</module>
                 <module>testdata-spring-dispatch-1</module>
                 <module>testdata-spring-dispatch-2</module>
-                <module>testdata-spring-split-config</module>
                 <module>testdata-spring-default-config</module>
+                <module>testdata-spring-split-config</module>
+                <module>testdata-spring-resources</module>
                 <module>testdata</module>
             </modules>
         </profile>

@@ -33,4 +33,5 @@ public class WarNames
     public final static String  SPRING_ROOT_DISP_2      = "pathfinder-testdata-spring-dispatch-2.war";
     public final static String  SPRING_DEFAULT_CONFIG   = "pathfinder-testdata-spring-default-config.war";
     public final static String  SPRING_SPLIT_CONFIG     = "pathfinder-testdata-spring-split-config.war";
+    public final static String  SPRING_RESOURCES        = "pathfinder-testdata-spring-resources.war";
 }

@@ -141,14 +141,8 @@ public class TestSpringContext
     @Test
     public void testCombinedContext() throws Exception
     {
-        // there are three ways to combine: comma, semi-colon, or whitespace (any amount)
-        // bean count will be our proxy for reading correctly
-
         SpringContext ctx1 = new SpringContext(null, "classpath:contexts/combined1.xml,classpath:contexts/combined2.xml");
         assertEquals("processed all files when separated by comma", 4, ctx1.getBeans().size());
-
-        SpringContext ctx2 = new SpringContext(null, "classpath:contexts/combined1.xml;classpath:contexts/combined2.xml");
-        assertEquals("processed all files when separated by semi-colon", 4, ctx2.getBeans().size());
 
         SpringContext ctx3 = new SpringContext(null, "classpath:contexts/combined1.xml \t\n classpath:contexts/combined2.xml");
         assertEquals("processed all files when separated by comma", 4, ctx3.getBeans().size());
@@ -232,5 +226,33 @@ public class TestSpringContext
                                         ctx.getBean("myController").getBeanClass());
         assertEquals("@Controller #2",  "com.kdgregory.pathfinder.test.scan.controller.ControllerB",
                                         ctx.getBean("controllerB").getBeanClass());
+    }
+
+
+    @Test
+    public void testImportedContext() throws Exception
+    {
+        WarMachine war = TestHelpers.createWarMachine(WarNames.SPRING_SPLIT_CONFIG);
+        SpringContext ctx = new SpringContext(war, "/WEB-INF/spring/servletContext.xml");
+
+        assertEquals("bean from base context",      "com.kdgregory.pathfinder.test.spring2.ControllerA",
+                                                    ctx.getBean("controllerA").getBeanClass());
+        assertEquals("bean from imported context",  "com.kdgregory.pathfinder.test.spring2.ControllerB",
+                                                    ctx.getBean("controllerB").getBeanClass());
+    }
+
+
+    @Test
+    public void testImportedContextAbsolutePath() throws Exception
+    {
+        // absolute path is really relative path for resource resolution
+
+        WarMachine war = TestHelpers.createWarMachine(WarNames.SPRING_RESOURCES);
+        SpringContext ctx = new SpringContext(war, "/WEB-INF/spring/servletContext.xml");
+
+        assertEquals("bean from base context",      "com.kdgregory.pathfinder.test.spring3.pkg1.ControllerA",
+                                                    ctx.getBean("controllerA").getBeanClass());
+        assertEquals("bean from imported context",  "com.kdgregory.pathfinder.test.spring3.pkg1.ControllerB",
+                                                    ctx.getBean("controllerB").getBeanClass());
     }
 }
