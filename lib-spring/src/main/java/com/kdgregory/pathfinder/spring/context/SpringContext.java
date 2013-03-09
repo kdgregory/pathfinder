@@ -14,10 +14,8 @@
 
 package com.kdgregory.pathfinder.spring.context;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -89,9 +87,9 @@ public class SpringContext
             beanDefinitions.putAll(parent.beanDefinitions);
         }
 
-        for (String path : decomposeContextLocation(contextLocation))
+        for (String path : ResourceLoader.decomposeResourceReferences(contextLocation))
         {
-            Document dom = parseContextFile(war, path);
+            Document dom = parseContextFile(war, path, "");
             processImports(war, path, dom);
             extractBeanDefinitions(path, dom);
             processComponentScans(war, dom);
@@ -143,23 +141,14 @@ public class SpringContext
 //  Internals
 //----------------------------------------------------------------------------
 
-    private List<String> decomposeContextLocation(String contextLocation)
-    {
-        contextLocation = StringUtil.trim(contextLocation);
-        String[] paths = contextLocation.split("[,;]|\\s+");
-        // FIXME - support wildcards
-        return Arrays.asList(paths);
-    }
-
-
-    private Document parseContextFile(WarMachine war, String file)
+    private Document parseContextFile(WarMachine war, String file, String baseDir)
     {
         logger.debug("parsing context file: " + file);
 
         InputStream in = null;
         try
         {
-            in = openResource(war, file);
+            in = new ResourceLoader(war, baseDir).getResourceAsStream(file);
             if (in == null)
                 throw new IllegalArgumentException("invalid context location: " + file);
             return ParseUtil.parse(new InputSource(in));
@@ -191,10 +180,15 @@ public class SpringContext
                 logger.warn("missing resource attribute; skipping import");
                 continue;
             }
-            importLoc = rebaseIncludedResource(origFile, importLoc);
+
+            if (importLoc.startsWith("/"))
+            {
+                logger.warn("imported context is an absolute path, but Spring treats as relative: " + importLoc);
+            }
 
             logger.debug("processing imported file \"" + importLoc + "\" from " + origFile);
-            Document importDom = parseContextFile(war, importLoc);
+            String baseDir = StringUtil.extractLeftOfLast(origFile, "/");
+            Document importDom = parseContextFile(war, importLoc, baseDir);
             for (Element child : DomUtil.getChildren(importDom.getDocumentElement()))
             {
                 child = (Element)dom.importNode(child, true);
@@ -242,40 +236,6 @@ public class SpringContext
                 }
             }
         }
-    }
-
-
-    /**
-     *  Opens a resource stream, either looking to the passed WAR or (if it's null)
-     *  to the execution classpath.
-     */
-    private InputStream openResource(WarMachine war, String file)
-    throws IOException
-    {
-        if (file.startsWith("classpath:"))
-        {
-            file = file.substring(10);
-            return (war == null) ? getClass().getClassLoader().getResourceAsStream(file)
-                                 : war.openClasspathFile(file);
-        }
-        else
-        {
-            return war.openFile(file);
-        }
-    }
-
-
-    private String rebaseIncludedResource(String origFile, String includedFile)
-    {
-        // FIXME - I'm not sure if the ":" is valid; could be an absolute Windows path
-        if (includedFile.contains(":") || includedFile.startsWith("/"))
-            return includedFile;
-
-        String origPath = StringUtil.extractLeftOfLast(origFile, "/");
-        if (StringUtil.isEmpty(origPath))
-            return includedFile;
-
-        return origPath + "/" + includedFile;
     }
 
 

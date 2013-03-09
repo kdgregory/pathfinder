@@ -14,9 +14,8 @@
 
 package com.kdgregory.pathfinder.spring.inspectors;
 
-import static org.junit.Assert.assertEquals;
-
 import org.junit.Test;
+import static org.junit.Assert.*;
 
 import com.kdgregory.pathfinder.core.HttpMethod;
 import com.kdgregory.pathfinder.spring.AbstractSpringTestcase;

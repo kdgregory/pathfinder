@@ -42,7 +42,8 @@ Replacing WARFILE with the Spring3 test WAR, you'll see something like the follo
     /servlet/B/baz.html            POST     com.kdgregory.pathfinder.test.spring3.pkg2.ControllerB
     /servlet/foo.html                       com.kdgregory.pathfinder.test.spring3.pkg1.ControllerA
 
-If you want to be overwhelmed with output, edit the `app-pathfinder/src/main/resources/log4j.properties` to select something other than the "null" appender.
+Currently, any errors or warnings are logged to StdErr (normal output goes to StdOut, so you can redirect as desired). If you want to be
+overwhelmed with output, edit the `app-pathfinder/src/main/resources/log4j.properties` to enable DEBUG.
 
 
 Developing
