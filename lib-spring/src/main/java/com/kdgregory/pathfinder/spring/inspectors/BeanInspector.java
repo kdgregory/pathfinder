@@ -76,16 +76,15 @@ public class BeanInspector
         List<BeanDefinition> defs = context.getBeansByClass(SpringConstants.CLASS_SIMPLE_URL_HANDLER);
         logger.debug("found " + defs.size() + " SimpleUrlHandlerMapping beans");
 
-        for (BeanDefinition def0 : defs)
+        for (BeanDefinition def : defs)
         {
-            if (def0.getDefinitionType() != DefinitionType.XML)
+            if (def.getDefinitionType() != DefinitionType.XML)
             {
-                logger.warn("SimpleUrlHandlerMapping bean " + def0.getBeanId() + " found by scan; "
+                logger.warn("SimpleUrlHandlerMapping bean " + def.getBeanId() + " found by scan; "
                             + "ignoring because we can't extract mappings without loading it");
                 continue;
             }
 
-            XmlBeanDefinition def = (XmlBeanDefinition)def0;
             Properties mappings = def.getPropertyAsProperties("mappings");
             if ((mappings == null) || mappings.isEmpty())
             {
@@ -112,8 +111,8 @@ public class BeanInspector
         if (mappers.size() == 0)
             return;
 
-        BeanDefinition mapper0 = mappers.get(0);
-        if ( mapper0.getDefinitionType() != DefinitionType.XML)
+        BeanDefinition mapper = mappers.get(0);
+        if ( mapper.getDefinitionType() != DefinitionType.XML)
         {
             logger.warn("found ControllerClassNameHandlerMapping as scanned bean; ignoring");
             return;
@@ -121,7 +120,6 @@ public class BeanInspector
 
         logger.debug("found ControllerClassNameHandlerMapping; scanning for beans");
 
-        XmlBeanDefinition mapper = (XmlBeanDefinition)mapper0;
         String mapperPrefix = mapper.getPropertyAsString("pathPrefix");
         if (! StringUtil.isBlank(mapperPrefix))
         {

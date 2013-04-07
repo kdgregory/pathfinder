@@ -35,10 +35,11 @@ import com.kdgregory.pathfinder.test.WarNames;
 public class TestAnnotatedMappings
 extends AbstractSpringTestcase
 {
-
     @Test
     public void testMappingOnMethodOnly() throws Exception
     {
+        logger.info("testMappingOnMethodOnly()");
+
         processWar(WarNames.SPRING_ANNO);
 
         SpringDestination dest = (SpringDestination)pathRepo.get("/servlet/foo.html", HttpMethod.GET);
@@ -53,6 +54,8 @@ extends AbstractSpringTestcase
     @Test
     public void testMappingOnClassAndMethod() throws Exception
     {
+        logger.info("testMappingOnClassAndMethod()");
+
         processWar(WarNames.SPRING_ANNO);
 
         SpringDestination dest1 = (SpringDestination)pathRepo.get("/servlet/B/bar.html", HttpMethod.GET);
@@ -74,6 +77,8 @@ extends AbstractSpringTestcase
     @Test
     public void testMappingOnClassOnly() throws Exception
     {
+        logger.info("testMappingOnClassOnly()");
+
         processWar(WarNames.SPRING_ANNO);
 
         SpringDestination dest1 = (SpringDestination)pathRepo.get("/servlet/C", HttpMethod.GET);
@@ -88,6 +93,8 @@ extends AbstractSpringTestcase
     @Test
     public void testMappingWithPathVariable() throws Exception
     {
+        logger.info("testMappingWithPathVariable()");
+
         processWar(WarNames.SPRING_ANNO);
 
         SpringDestination est = (SpringDestination)pathRepo.get("/servlet/D/{id}", HttpMethod.GET);
@@ -102,6 +109,8 @@ extends AbstractSpringTestcase
     @Test
     public void testRequestMethodSpecification() throws Exception
     {
+        logger.info("testRequestMethodSpecification()");
+
         processWar(WarNames.SPRING_ANNO);
 
         // verify that we add all variants when method isn't specified
@@ -128,6 +137,8 @@ extends AbstractSpringTestcase
     @Test
     public void testRequestParameters() throws Exception
     {
+        logger.info("testRequestParameters()");
+
         processWar(WarNames.SPRING_ANNO);
 
         SpringDestination dest = (SpringDestination)pathRepo.get("/servlet/E1", HttpMethod.GET);
@@ -160,6 +171,8 @@ extends AbstractSpringTestcase
     @Test
     public void testInferredRequestParameters() throws Exception
     {
+        logger.info("testInferredRequestParameters()");
+
         processWar(WarNames.SPRING_ANNO);
 
         SpringDestination dest = (SpringDestination)pathRepo.get("/servlet/E2", HttpMethod.GET);
@@ -181,13 +194,14 @@ extends AbstractSpringTestcase
     @Test
     public void testExplicitControllerDefs() throws Exception
     {
+        logger.info("testExplicitControllerDefs()");
+
         processWar(WarNames.SPRING_ANNO_NOSCAN);
 
         // index.jsp + one controller mapping
         assertEquals("number of mapped URLs", 2, pathRepo.urlCount());
 
         SpringDestination dest = (SpringDestination)pathRepo.get("/servlet/B/bar", HttpMethod.GET);
-        assertEquals("controller ID",    "controllerB", dest.getBeanId());
         assertEquals("controller class", "com.kdgregory.pathfinder.test.spring3.pkg1.ControllerB", dest.getBeanClass());
     }
 }

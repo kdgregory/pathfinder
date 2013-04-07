@@ -32,6 +32,8 @@ extends AbstractSpringTestcase
     @Test
     public void testDispatcherServletMappedToSlash() throws Exception
     {
+        logger.info("testDispatcherServletMappedToSlash()");
+
         processWar(WarNames.SPRING_ROOT_DISP_1);
 
         SpringDestination dest = (SpringDestination)pathRepo.get("/foo", HttpMethod.GET);
@@ -42,10 +44,11 @@ extends AbstractSpringTestcase
     @Test
     public void testDispatcherServletMappedToSlashStar() throws Exception
     {
+        logger.info("testDispatcherServletMappedToSlashStar()");
+
         processWar(WarNames.SPRING_ROOT_DISP_2);
 
         SpringDestination dest = (SpringDestination)pathRepo.get("/foo", HttpMethod.GET);
         assertEquals("com.kdgregory.pathfinder.test.spring3.ControllerA", dest.getBeanClass());
     }
-
 }

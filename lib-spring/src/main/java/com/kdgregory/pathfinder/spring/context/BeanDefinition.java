@@ -14,7 +14,7 @@
 
 package com.kdgregory.pathfinder.spring.context;
 
-import net.sf.kdgcommons.lang.StringUtil;
+import java.util.Properties;
 
 
 /**
@@ -39,17 +39,18 @@ public abstract class BeanDefinition
     private String beanName;
     private String beanClass;
 
+
     protected BeanDefinition(DefinitionType type, String beanId, String beanName, String beanClass)
     {
         this.type = type;
-        this.beanId = StringUtil.isBlank(beanId) ? classNameToBeanId(beanClass) : beanId;
-        this.beanName = StringUtil.isBlank(beanName) ? this.beanId : beanName;
+        this.beanId = beanId;
+        this.beanName = beanName;
         this.beanClass = beanClass;
     }
 
 
 //----------------------------------------------------------------------------
-//  Common public methods
+//  Public Methods
 //----------------------------------------------------------------------------
 
     /**
@@ -63,8 +64,9 @@ public abstract class BeanDefinition
 
 
     /**
-     *  Returns the ID of this bean. If the bean does not define its own ID,
-     *  will return the bean's simple classname, with first letter lowercased.
+     *  Returns the ID of this bean. If the bean does not define its own ID, this
+     *  will be a generated unique ID (that may or may not match what Spring will
+     *  generate in a similar situation).
      */
     public String getBeanId()
     {
@@ -91,26 +93,45 @@ public abstract class BeanDefinition
     }
 
 
+    /**
+     *  Returns the named property value as a string, <code>null</code> if the
+     *  property does not exist or cannot be converted to a string.
+     *  <p>
+     *  Note that scanned bean definitions do not have accessible properties.
+     */
+    public String getPropertyAsString(String name)
+    {
+        return null;
+    }
+
+
+    /**
+     *  Returns the name of the bean referred to by the named property. Returns
+     *  <code>null</code> if the property does not exist or is not a reference.
+     *  <p>
+     *  Note that scanned bean definitions do not have accessible properties.
+     */
+    public String getPropertyAsRefId(String name)
+    {
+        return null;
+    }
+
+
+    /**
+     *  Returns the named property as a <code>Properties</code> object. Returns
+     *  <code>null</code> if the property does not exist or cannot be converted.
+     *  <p>
+     *  Note that scanned bean definitions do not have accessible properties.
+     */
+    public Properties getPropertyAsProperties(String name)
+    {
+        return null;
+    }
+
+
     @Override
     public String toString()
     {
         return getClass().getSimpleName() + "[id=" + getBeanId() + ", class=" + getBeanClass() + "]";
-    }
-
-
-//----------------------------------------------------------------------------
-//  Static utility methods
-//----------------------------------------------------------------------------
-
-    /**
-     *  Converts a Java class name (fully-qualified or not) into a bean name
-     *  by lowercasing the first letter. No attempt is made to deal with other
-     *  beans that might have the same name.
-     */
-    public static String classNameToBeanId(String className)
-    {
-        String beanId = StringUtil.extractRightOfLast(className, ".");
-        beanId = beanId.substring(0, 1).toLowerCase() + beanId.substring(1);
-        return beanId;
     }
 }

@@ -32,6 +32,8 @@ extends AbstractSpringTestcase
     @Test
     public void testDispatcherServletMappingsRemoved() throws Exception
     {
+        logger.info("testDispatcherServletMappingsRemoved()");
+
         processWar(WarNames.SPRING_SIMPLE);
 
         // the original DispatcherServlet mapping should be gone
@@ -45,6 +47,8 @@ extends AbstractSpringTestcase
     @Test
     public void testSimpleUrlMappings() throws Exception
     {
+        logger.info("testSimpleUrlMappings()");
+
         processWar(WarNames.SPRING_SIMPLE);
 
         SpringDestination dest1 = (SpringDestination)pathRepo.get("/servlet/foo", HttpMethod.GET);
@@ -60,6 +64,8 @@ extends AbstractSpringTestcase
     @Test
     public void testBeanNameUrlMappings() throws Exception
     {
+        logger.info("testBeanNameUrlMappings()");
+
         processWar(WarNames.SPRING_BEAN_NAME);
 
         // index.jsp + 2 Spring mappings
@@ -78,6 +84,8 @@ extends AbstractSpringTestcase
     @Test
     public void testClassNameUrlMappings() throws Exception
     {
+        logger.info("testClassNameUrlMappings()");
+
         processWar(WarNames.SPRING_CLASS_NAME);
 
         // index.jsp + 2 Spring mappings

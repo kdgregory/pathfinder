@@ -16,6 +16,8 @@ package com.kdgregory.pathfinder.spring.context;
 
 import org.apache.bcel.classfile.JavaClass;
 
+import net.sf.kdgcommons.lang.StringUtil;
+
 import com.kdgregory.bcelx.classfile.Annotation;
 import com.kdgregory.bcelx.classfile.Annotation.ParamValue;
 import com.kdgregory.bcelx.parser.AnnotationParser;
@@ -78,10 +80,19 @@ extends BeanDefinition
             return null;
 
         ParamValue id = anno.getValue();
-        if ((id != null) && (id.asScalar() != null))
-            return String.valueOf(id.asScalar());
+        if (id != null)
+        {
+            String idValue = (id.asScalar() != null)
+                           ? String.valueOf(id.asScalar())
+                           : null;
+            if (idValue != null)
+                return idValue;
+        }
 
-        return null;
+        String className = klass.getClassName();
+        String beanId = StringUtil.extractRightOfLast(className, ".");
+        beanId = beanId.substring(0, 1).toLowerCase() + beanId.substring(1);
+        return beanId;
     }
 
 

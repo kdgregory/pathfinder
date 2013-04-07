@@ -16,10 +16,12 @@ package com.kdgregory.pathfinder.spring.context;
 
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -37,6 +39,7 @@ import net.sf.practicalxml.xpath.XPathWrapperFactory.CacheType;
 
 import com.kdgregory.bcelx.parser.AnnotationParser;
 import com.kdgregory.pathfinder.core.WarMachine;
+import com.kdgregory.pathfinder.spring.InvalidContextException;
 import com.kdgregory.pathfinder.util.ClasspathScanner;
 
 
@@ -57,7 +60,9 @@ public class SpringContext
 //  Instance Variables and Constructor
 //----------------------------------------------------------------------------
 
-    private Map<String,BeanDefinition> beanDefinitions = new HashMap<String,BeanDefinition>();
+    private Map<String,BeanDefinition> beanDefinitions       = new HashMap<String,BeanDefinition>();
+    private Map<String,BeanDefinition> beanDefinitionsById   = new HashMap<String,BeanDefinition>();
+    private Map<String,BeanDefinition> beanDefinitionsByName = new HashMap<String,BeanDefinition>();
 
 
     /**
@@ -85,13 +90,15 @@ public class SpringContext
         if (parent != null)
         {
             beanDefinitions.putAll(parent.beanDefinitions);
+            beanDefinitionsById.putAll(parent.beanDefinitionsById);
+            beanDefinitionsByName.putAll(parent.beanDefinitionsByName);
         }
 
         for (String path : ResourceLoader.decomposeResourceReferences(contextLocation))
         {
             Document dom = parseContextFile(war, path, "");
             processImports(war, path, dom);
-            extractBeanDefinitions(path, dom);
+            processXmlConfig(path, dom);
             processComponentScans(war, dom);
         }
     }
@@ -116,7 +123,11 @@ public class SpringContext
      */
     public BeanDefinition getBean(String name)
     {
-        return beanDefinitions.get(name);
+        BeanDefinition def = beanDefinitionsById.get(name);
+        if (def == null)
+            def = beanDefinitionsByName.get(name);
+
+        return def;
     }
 
 
@@ -150,14 +161,14 @@ public class SpringContext
         {
             in = new ResourceLoader(war, baseDir).getResourceAsStream(file);
             if (in == null)
-                throw new IllegalArgumentException("invalid context location: " + file);
+                throw new InvalidContextException("invalid context location: " + file);
             return ParseUtil.parse(new InputSource(in));
         }
         catch (Exception ex)
         {
-            if (ex instanceof IllegalArgumentException)
-                throw (IllegalArgumentException)ex;
-            throw new IllegalArgumentException("unparseable context: " + file, ex);
+            if (ex instanceof InvalidContextException)
+                throw (InvalidContextException)ex;
+            throw new InvalidContextException("unparseable context: " + file, ex);
         }
         finally
         {
@@ -198,42 +209,30 @@ public class SpringContext
     }
 
 
-    private void extractBeanDefinitions(String filename, Document dom)
+    private void processXmlConfig(String filename, Document dom)
     {
         List<Element> beans = xpfact.newXPath("/b:beans/b:bean").evaluate(dom, Element.class);
         logger.debug("found " + beans.size() + " bean definitions in " + filename);
 
         for (Element bean : beans)
         {
-            XmlBeanDefinition def = new XmlBeanDefinition(xpfact, bean);
-            beanDefinitions.put(def.getBeanId(), def);
-            logger.debug("XML bean \"" + def.getBeanId() + "\" => " + def.getBeanClass());
+            XmlBeanDefinition def = new XmlBeanDefinition(xpfact, this, bean);
+            addBeanDefinition(def);
         }
     }
+
 
 
     private void processComponentScans(WarMachine war, Document dom)
     {
         for (ClasspathScanner scanner : getComponentScans(dom))
         {
-            for (AnnotationParser parsedClass : scanner.scan(war).values())
+            Collection<AnnotationParser> parsedClasses = scanner.scan(war).values();
+            logger.debug("found " + parsedClasses.size() + " classes by component scan");
+            for (AnnotationParser parsedClass : parsedClasses)
             {
                 ScannedBeanDefinition def = new ScannedBeanDefinition(parsedClass.getParsedClass(), parsedClass);
-                if (! beanDefinitions.containsKey(def.getBeanId()))
-                {
-                    beanDefinitions.put(def.getBeanId(), def);
-                    logger.debug("scanned bean \"" + def.getBeanId() + "\" => " + def.getBeanClass());
-                }
-                else
-                {
-                    BeanDefinition existing = beanDefinitions.get(def.getBeanId());
-                    if (! existing.getBeanClass().equals(def.getBeanClass()))
-                    {
-                        logger.warn("multiple beans with same id: " + def.getBeanId()
-                                    + "; keeping " + existing.getBeanClass()
-                                    + ", ignoring " + def.getBeanClass());
-                    }
-                }
+                addBeanDefinition(def);
             }
         }
     }
@@ -260,5 +259,53 @@ public class SpringContext
         }
 
         return result;
+    }
+
+
+    private void addBeanDefinition(BeanDefinition def)
+    {
+        String beanId = def.getBeanId();
+        String beanName = def.getBeanName();
+
+        String preferredId = null;
+        if (! StringUtil.isBlank(beanId))
+        {
+            preferredId = beanId;
+            logger.debug("adding bean by ID: \"" + preferredId + "\" => " + def.getBeanClass());
+        }
+        else if (! StringUtil.isBlank(beanName))
+        {
+            preferredId = beanName;
+            logger.debug("adding bean by name: \"" + preferredId + "\" => " + def.getBeanClass());
+        }
+        else
+        {
+            preferredId = UUID.randomUUID().toString();
+            logger.debug("adding bean with generated ID: \"" + preferredId + "\" => " + def.getBeanClass());
+        }
+
+        if (beanDefinitions.containsKey(preferredId))
+        {
+            BeanDefinition existing = beanDefinitions.remove(preferredId);
+            logger.warn("replacing existing bean with ID \"" + preferredId + "\"");
+            if (! StringUtil.isBlank(existing.getBeanId()))
+            {
+                beanDefinitionsByName.remove(existing.getBeanId());
+            }
+            if (! StringUtil.isBlank(existing.getBeanName()))
+            {
+                beanDefinitionsByName.remove(existing.getBeanName());
+            }
+        }
+
+        beanDefinitions.put(preferredId, def);
+        if (! StringUtil.isBlank(def.getBeanId()))
+        {
+            beanDefinitionsById.put(def.getBeanId(), def);
+        }
+        if (! StringUtil.isBlank(def.getBeanName()))
+        {
+            beanDefinitionsByName.put(def.getBeanName(), def);
+        }
     }
 }
