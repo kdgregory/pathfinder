@@ -15,6 +15,7 @@
 package com.kdgregory.pathfinder.spring.context;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 
 import org.junit.Test;
@@ -23,6 +24,8 @@ import static org.junit.Assert.*;
 import org.apache.log4j.Logger;
 
 import com.kdgregory.pathfinder.core.WarMachine;
+import com.kdgregory.pathfinder.spring.AbstractSpringTestcase;
+import com.kdgregory.pathfinder.spring.InvalidContextException;
 import com.kdgregory.pathfinder.spring.context.BeanDefinition;
 import com.kdgregory.pathfinder.spring.context.SpringContext;
 import com.kdgregory.pathfinder.spring.context.XmlBeanDefinition;
@@ -32,9 +35,8 @@ import com.kdgregory.pathfinder.util.TestHelpers;
 
 // note: also tests BeanDefinition
 public class TestSpringContext
+extends AbstractSpringTestcase
 {
-    private Logger logger = Logger.getLogger(getClass());
-
     @Test
     public void testGetBeansFromSimpleContext() throws Exception
     {
@@ -80,8 +82,8 @@ public class TestSpringContext
         logger.info("testGetProperty()");
 
         SpringContext context = new SpringContext(null, "classpath:contexts/propContext.xml");
-        XmlBeanDefinition bean = (XmlBeanDefinition)context.getBean("example");
-        assertNotNull("able to load context", bean);
+        BeanDefinition bean = context.getBean("example");
+        assertNotNull("able to find bean", bean);
 
         assertEquals("extracted property as string in attribute", "foo", bean.getPropertyAsString("propAsStringAttribute"));
         assertEquals("extracted property as string in value", "bar", bean.getPropertyAsString("propAsStringValue"));
@@ -102,8 +104,59 @@ public class TestSpringContext
 
 
     @Test
+    public void testInheritProperty() throws Exception
+    {
+        logger.info("testInheritProperty()");
+
+        SpringContext context = new SpringContext(null, "classpath:contexts/inheritProp.xml");
+        BeanDefinition bean = context.getBean("inherited");
+        assertNotNull("able to find bean", bean);
+
+        assertEquals("extracted property as string in attribute", "foo", bean.getPropertyAsString("propAsStringAttribute"));
+        assertEquals("extracted property as string in value", "bar", bean.getPropertyAsString("propAsStringValue"));
+
+        assertEquals("extracted property as ref", "example", bean.getPropertyAsRefId("propAsRefId"));
+        // FIXME - add test for explicit <ref> element
+
+        Properties propsProp1 = bean.getPropertyAsProperties("propAsSingleValue");
+        assertNotNull("able to extract property with name-value props", propsProp1);
+        assertEquals("extracted property for 'foo'",   "bar",    propsProp1.get("foo"));
+        assertEquals("extracted property for 'argle'", "bargle", propsProp1.get("argle"));
+
+        Properties propsProp2 = bean.getPropertyAsProperties("propAsExplicitProperties");
+        assertNotNull("able to extract property with explicit props", propsProp2);
+        assertEquals("extracted property for 'foo'",   "bar",    propsProp2.get("foo"));
+        assertEquals("extracted property for 'argle'", "bargle", propsProp2.get("argle"));
+    }
+
+
+    @Test
+    public void testInheritClass() throws Exception
+    {
+        logger.info("testInheritClass()");
+
+        SpringContext ctx = new SpringContext(null, "classpath:contexts/inheritClass.xml");
+
+        assertEquals("com.example.SomeBean", ctx.getBean("concreteBean").getBeanClass());
+    }
+
+
+    @Test(expected=InvalidContextException.class)
+    public void testInheritClassFail() throws Exception
+    {
+        logger.info("testInheritClassFail()");
+
+        SpringContext ctx = new SpringContext(null, "classpath:contexts/inheritClassFail.xml");
+
+        assertEquals("com.example.SomeBean", ctx.getBean("concreteBean").getBeanClass());
+    }
+
+
+    @Test
     public void testParentChildContext() throws Exception
     {
+        logger.info("testParentChildContext()");
+
         SpringContext parent = new SpringContext(null, "classpath:contexts/parentContext.xml");
         SpringContext child = new SpringContext(parent, null, "classpath:contexts/childContext.xml");
 
@@ -141,6 +194,8 @@ public class TestSpringContext
     @Test
     public void testCombinedContext() throws Exception
     {
+        logger.info("testCombinedContext()");
+
         SpringContext ctx1 = new SpringContext(null, "classpath:contexts/combined1.xml,classpath:contexts/combined2.xml");
         assertEquals("processed all files when separated by comma", 4, ctx1.getBeans().size());
 
@@ -152,6 +207,8 @@ public class TestSpringContext
     @Test
     public void testComponentScan() throws Exception
     {
+        logger.info("testComponentScan()");
+
         WarMachine war = TestHelpers.createWarMachine(WarNames.SPRING_SCAN);
         SpringContext ctx = new SpringContext(war, "/WEB-INF/spring/servletContext.xml");
 
@@ -173,6 +230,8 @@ public class TestSpringContext
     @Test
     public void testComponentScanPartial() throws Exception
     {
+        logger.info("testComponentScanPartial()");
+
         WarMachine war = TestHelpers.createWarMachine(WarNames.SPRING_SCAN);
         SpringContext ctx = new SpringContext(war, "/WEB-INF/spring/altContext1.xml");
 
@@ -192,6 +251,8 @@ public class TestSpringContext
     @Test
     public void testComponentScanMultiple() throws Exception
     {
+        logger.info("testComponentScanMultiple()");
+
         WarMachine war = TestHelpers.createWarMachine(WarNames.SPRING_SCAN);
         SpringContext ctx = new SpringContext(war, "/WEB-INF/spring/altContext2.xml");
 
@@ -212,6 +273,8 @@ public class TestSpringContext
     @Test
     public void testComponentScanMultipleWithOverlap() throws Exception
     {
+        logger.info("testComponentScanMultipleWithOverlap()");
+
         WarMachine war = TestHelpers.createWarMachine(WarNames.SPRING_SCAN);
         SpringContext ctx = new SpringContext(war, "/WEB-INF/spring/altContext3.xml");
 
@@ -232,6 +295,8 @@ public class TestSpringContext
     @Test
     public void testImportedContext() throws Exception
     {
+        logger.info("testImportedContext()");
+
         WarMachine war = TestHelpers.createWarMachine(WarNames.SPRING_SPLIT_CONFIG);
         SpringContext ctx = new SpringContext(war, "/WEB-INF/spring/servletContext.xml");
 
@@ -246,6 +311,7 @@ public class TestSpringContext
     public void testImportedContextAbsolutePath() throws Exception
     {
         // absolute path is really relative path for resource resolution
+        logger.info("testImportedContextAbsolutePath()");
 
         WarMachine war = TestHelpers.createWarMachine(WarNames.SPRING_RESOURCES);
         SpringContext ctx = new SpringContext(war, "/WEB-INF/spring/servletContext.xml");
@@ -254,5 +320,44 @@ public class TestSpringContext
                                                     ctx.getBean("controllerA").getBeanClass());
         assertEquals("bean from imported context",  "com.kdgregory.pathfinder.test.spring3.pkg1.ControllerB",
                                                     ctx.getBean("controllerB").getBeanClass());
+    }
+
+
+    @Test
+    public void testReferenceByName() throws Exception
+    {
+        logger.info("testReferenceByName()");
+
+        SpringContext ctx = new SpringContext(null, "classpath:contexts/referenceByName.xml");
+
+        // in keeping with ApplicationContext.getBeanDefinitionNames(), the definition map
+        // is ID if available, name if not; each bean appears only once
+
+        Map<String,BeanDefinition> beans = ctx.getBeans();
+        assertEquals("number of beans in map",          2, beans.size());
+        assertEquals("map holds bean1 by name",         "com.example.SomeBean",     beans.get("bean1").getBeanClass());
+        assertEquals("map doesn't hold bean2 by name",   null,                      beans.get("bean2"));
+        assertEquals("map holds bean2 by ID",           "com.example.AnotherBean",  beans.get("foobar").getBeanClass());
+
+        // but getting the bean directly can use either name or ID
+
+        assertEquals("context holds bean1 by name",     "com.example.SomeBean",     ctx.getBean("bean1").getBeanClass());
+        assertEquals("context holds bean2 by name",     "com.example.AnotherBean",  ctx.getBean("bean2").getBeanClass());
+        assertEquals("context holds bean2 by ID",       "com.example.AnotherBean",  ctx.getBean("foobar").getBeanClass());
+    }
+
+
+    @Test
+    public void testBeanWithoutNameOrId() throws Exception
+    {
+        logger.info("testBeanWithoutNameOrId()");
+
+        SpringContext ctx = new SpringContext(null, "classpath:contexts/missingId.xml");
+
+        // this map is keyed by bean name, so having two elements indicates that we gave
+        // each of them unique names ... and that's the only guarantee that Spring wants
+
+        Map<String,BeanDefinition> beans = ctx.getBeans();
+        assertEquals("bean count", 2, beans.size());
     }
 }

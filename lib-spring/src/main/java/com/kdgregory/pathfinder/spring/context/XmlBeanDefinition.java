@@ -25,6 +25,7 @@ import net.sf.kdgcommons.lang.StringUtil;
 import net.sf.practicalxml.DomUtil;
 import net.sf.practicalxml.xpath.XPathWrapperFactory;
 
+import com.kdgregory.pathfinder.spring.InvalidContextException;
 
 
 /**
@@ -33,15 +34,26 @@ import net.sf.practicalxml.xpath.XPathWrapperFactory;
 public class XmlBeanDefinition
 extends BeanDefinition
 {
+    // the following two objects are shared across instances
     private XPathWrapperFactory xpfact;
+    private SpringContext context;
+
+    // this is unique to the bean definition
     private Element beanDef;
 
-    public XmlBeanDefinition(XPathWrapperFactory xpf, Element def)
+    // the string is extracted at compile-time, used as a flag; the definition is lazily assigned
+    private String parentRef;
+    private XmlBeanDefinition parent;
+
+
+    public XmlBeanDefinition(XPathWrapperFactory xpfact, SpringContext context, Element def)
     {
         super(DefinitionType.XML, extractBeanId(def), extractBeanName(def), extractBeanClass(def));
 
-        xpfact = xpf;
+        this.xpfact = xpfact;
+        this.context = context;
         beanDef = def;
+        parentRef = StringUtil.trimToNull(def.getAttribute("parent"));
     }
 
 
@@ -58,10 +70,18 @@ extends BeanDefinition
     }
 
 
-    /**
-     *  Returns the named property value as a string. Returns <code>null</code>
-     *  if the named property does not exist or cannot be converted to a string.
-     */
+    @Override
+    public String getBeanClass()
+    {
+        String beanClass = super.getBeanClass();
+        if (! StringUtil.isEmpty(beanClass))
+            return beanClass;
+
+        return resolveParent(true).getBeanClass();
+    }
+
+
+    @Override
     public String getPropertyAsString(String name)
     {
         Element propDef = getPropertyDefinition(name);
@@ -76,10 +96,7 @@ extends BeanDefinition
     }
 
 
-    /**
-     *  Returns the name of the bean referred to by the named property. Returns
-     *  <code>null</code> if the property does not exist or is not a reference.
-     */
+    @Override
     public String getPropertyAsRefId(String name)
     {
         Element propDef = getPropertyDefinition(name);
@@ -90,10 +107,7 @@ extends BeanDefinition
     }
 
 
-    /**
-     *  Returns the named property as a <code>Properties</code> object. Returns
-     *  <code>null</code> if the property does not exist or cannot be converted.
-     */
+    @Override
     public Properties getPropertyAsProperties(String name)
     {
         Element propDef = getPropertyDefinition(name);
@@ -130,11 +144,34 @@ extends BeanDefinition
     }
 
 
+    private XmlBeanDefinition resolveParent(boolean failIfNoParent)
+    {
+        if (parent != null)
+            return parent;
+
+        // technically, an XML definition could inherit from a non-XML definition
+        // I'm going to assume that's an extreme corner case, as supporting it
+        // will make my life more difficult
+        BeanDefinition p0 = (parentRef != null) ? context.getBean(parentRef) : null;
+        if (p0 instanceof XmlBeanDefinition)
+            parent = (XmlBeanDefinition)p0;
+
+        if ((parent == null) && failIfNoParent)
+            throw new InvalidContextException("invalid bean definition, parent expected: " + super.getBeanId());
+
+        return parent;
+    }
+
+
     private Element getPropertyDefinition(String name)
     {
         // FIXME - consider binding a variable here
         Element propDef = xpfact.newXPath("b:property[@name='" + name+ "']")
                           .evaluateAsElement(getBeanDef());
+
+        if ((propDef == null) && (resolveParent(false) != null))
+            propDef = parent.getPropertyDefinition(name);
+
         return propDef;
     }
 

@@ -34,6 +34,8 @@ extends AbstractSpringTestcase
     @Test
     public void testDefaultLocations() throws Exception
     {
+        logger.info("testDefaultLocations()");
+
         processWar(WarNames.SPRING_DEFAULT_CONFIG);
 
         // this bean is defined in the servlet context
@@ -51,6 +53,8 @@ extends AbstractSpringTestcase
     @Test
     public void testServletContextIsCombinedWithRoot() throws Exception
     {
+        logger.info("testServletContextIsCombinedWithRoot()");
+
         processWar(WarNames.SPRING_SPLIT_CONFIG);
 
         // this one is defined in the servlet context
@@ -69,6 +73,8 @@ extends AbstractSpringTestcase
     @Test
     public void testImportedContext() throws Exception
     {
+        logger.info("testImportedContext()");
+
         processWar(WarNames.SPRING_SPLIT_CONFIG);
 
         // this one is defined in the servlet context

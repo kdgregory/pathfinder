@@ -32,12 +32,14 @@ import net.sf.practicalxml.ParseUtil;
 import net.sf.practicalxml.xpath.XPathWrapper;
 
 import com.kdgregory.pathfinder.core.WarMachine;
+import com.kdgregory.pathfinder.spring.AbstractSpringTestcase;
 import com.kdgregory.pathfinder.test.WarNames;
 import com.kdgregory.pathfinder.util.TestHelpers;
 
 
 // note: also tests BeanDefinition
 public class TestResourceLoader
+extends AbstractSpringTestcase
 {
     private static WarMachine war;  // used by multiple tests, opened once
     private InputStream in;         // reused by every test, closed in @After
@@ -71,6 +73,8 @@ public class TestResourceLoader
     @Test
     public void testRuntimeClasspath() throws Exception
     {
+        logger.info("testRuntimeClasspath()");
+
         ResourceLoader loader = new ResourceLoader(null);
 
         in = loader.getResourceAsStream("classpath:contexts/propContext.xml");
@@ -88,6 +92,8 @@ public class TestResourceLoader
     @Test
     public void testWarClasspath() throws Exception
     {
+        logger.info("testWarClasspath()");
+
         ResourceLoader loader = new ResourceLoader(war);
 
         // note difference in path
@@ -106,6 +112,8 @@ public class TestResourceLoader
     @Test
     public void testFileRelativePath() throws Exception
     {
+        logger.info("testFileRelativePath()");
+
         ResourceLoader loader = new ResourceLoader(null);
 
         in = loader.getResourceAsStream("file:src/test/resources/contexts/propContext.xml");
@@ -123,6 +131,8 @@ public class TestResourceLoader
     @Test
     public void testFileAbsolutePath() throws Exception
     {
+        logger.info("testFileAbsolutePath()");
+
         ResourceLoader loader = new ResourceLoader(null);
 
         File file = new File("src/test/resources/contexts/propContext.xml");
@@ -141,6 +151,8 @@ public class TestResourceLoader
     @Test
     public void testFileIgnoresWar() throws Exception
     {
+        logger.info("testFileIgnoresWar()");
+
         ResourceLoader loader = new ResourceLoader(war);
 
         in = loader.getResourceAsStream("file:src/test/resources/contexts/propContext.xml");
@@ -158,6 +170,7 @@ public class TestResourceLoader
     @Test
     public void testWarInternalAbsolutePathNoBasedir() throws Exception
     {
+        logger.info("testWarInternalAbsolutePathNoBasedir()");
 
         ResourceLoader loader = new ResourceLoader(war);
 
@@ -176,6 +189,7 @@ public class TestResourceLoader
     @Test
     public void testWarInternalRelativePathNoBasedir() throws Exception
     {
+        logger.info("testWarInternalRelativePathNoBasedir()");
 
         ResourceLoader loader = new ResourceLoader(war);
 
@@ -195,6 +209,7 @@ public class TestResourceLoader
     @Test
     public void testWarInternalRelativePathWithBasedir() throws Exception
     {
+        logger.info("testWarInternalRelativePathWithBasedir()");
 
         ResourceLoader loader = new ResourceLoader(war, "/WEB-INF");
 
@@ -213,6 +228,8 @@ public class TestResourceLoader
     @Test
     public void testWarInternalAbsolutePathWithBasedir() throws Exception
     {
+        logger.info("testWarInternalAbsolutePathWithBasedir()");
+
         // note that absolute paths are really relative: see "FileSystemResource caveats",
         // section 5.7.3 of the Spring Reference Manual (for release 3.1.x)
 
@@ -233,6 +250,8 @@ public class TestResourceLoader
     @Test
     public void testGetResourceReferencesNoWildcards() throws Exception
     {
+        logger.info("testGetResourceReferencesNoWildcards()");
+
         assertEquals("null spec",
                      Collections.<String>emptyList(),
                      ResourceLoader.decomposeResourceReferences(null));

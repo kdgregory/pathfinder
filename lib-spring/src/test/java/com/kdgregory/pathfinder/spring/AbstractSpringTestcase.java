@@ -14,6 +14,8 @@
 
 package com.kdgregory.pathfinder.spring;
 
+import org.apache.log4j.Logger;
+
 import com.kdgregory.pathfinder.core.PathRepo;
 import com.kdgregory.pathfinder.core.WarMachine;
 import com.kdgregory.pathfinder.core.impl.PathRepoImpl;
@@ -26,6 +28,9 @@ import com.kdgregory.pathfinder.util.TestHelpers;
  */
 public abstract class AbstractSpringTestcase
 {
+    
+    protected Logger logger = Logger.getLogger(getClass());
+    
     protected static WarMachine machine;
     protected PathRepo pathRepo;
 
