@@ -29,15 +29,41 @@ The end of the build is a "shaded" JAR, containing all dependencies. So you can 
 
 Replacing WARFILE with the Spring3 test WAR, you'll see something like the following:
 
-    > java -jar app-pathfinder/target/pathfinder-1.0-SNAPSHOT.jar testdata-spring3/target/pathfinder-testdata-spring3-1.0-SNAPSHOT.war 
-    /index.jsp                              /index.jsp
-    /servlet/B/bar.html            GET      com.kdgregory.pathfinder.test.spring3.pkg2.ControllerB
-    /servlet/B/baz.html            POST     com.kdgregory.pathfinder.test.spring3.pkg2.ControllerB
-    /servlet/foo.html                       com.kdgregory.pathfinder.test.spring3.pkg1.ControllerA
+    > java -jar app-pathfinder/target/pathfinder-1.0-SNAPSHOT.jar testdata-spring-anno/target/pathfinder-testdata-spring-anno-1.0-SNAPSHOT.war 
+    /index.jsp                   /index.jsp
+    /servlet/B/bar.html  GET     com.kdgregory.pathfinder.test.spring3.pkg2.ControllerB.getBar()
+    /servlet/B/baz.html  POST    com.kdgregory.pathfinder.test.spring3.pkg2.ControllerB.setBaz()
+    /servlet/D/{id}      GET     com.kdgregory.pathfinder.test.spring3.pkg2.ControllerD.getD()
+    ...
 
-Currently, any errors or warnings are logged to StdErr (normal output goes to StdOut, so you can redirect as desired). If you want to be
-overwhelmed with output, edit the `app-pathfinder/src/main/resources/log4j.properties` to enable DEBUG.
+There are some options that you can use to customize this output, and invoking without a target
+WARfile will display help text:
+
+    invocation: Main [OPTIONS] WARFILE
+    
+    --showJSP (default)
+    --hideJSP
+    Display client-accessible JSP files as destination URLs.
+    
+    --showHTML (default)
+    --hideHTML
+    Display client-accessible static HTML content as destination URLs.
+    
+    --showStatic
+    --hideStatic (default)
+    Display client-accessible static content other than HTML (eg, JS and CSS) as destination URLs.
+    
+    --showRequestParams
+    --hideRequestParams (default)
+    For mappings that identify individual request parameters (eg, Spring3) show those parameters in the mapping output.
+    
+    --debug
+    Enable debug-level logging to StdErr.
+    
+    --verbose
+    Enable verbose debugging (implies --debug).
 
 
-Developing
-==========
+Currently, any errors or warnings are logged to StdErr (normal output goes to StdOut, so you can
+redirect as desired).
+
