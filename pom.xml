@@ -34,7 +34,7 @@
         <commons.io.version>2.3</commons.io.version>
         <javax.servlet.version>2.4</javax.servlet.version>
         <javax.jstl.version>1.1.1</javax.jstl.version>
-        <junit.version>4.10</junit.version>
+        <junit.version>4.13.1</junit.version>
         <kdgcommons.version>1.0.9</kdgcommons.version>
         <log4j.version>1.2.12</log4j.version>
         <practicalxml.version>1.1.12</practicalxml.version>
